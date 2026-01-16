@@ -1,0 +1,17 @@
+<div class="container">
+  <div class="header">
+    <h1>Sistema de Tesouraria</h1>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab" [class.active]="activeTab === 'grupos'" (click)="setActiveTab('grupos')">
+      Grupos
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'reunioes'" (click)="setActiveTab('reunioes')">
+      Reuniões
+    </button>
+  </div>
+
+  <app-grupo *ngIf="activeTab === 'grupos'"></app-grupo>
+  <app-reuniao *ngIf="activeTab === 'reunioes'"></app-reuniao>
+</div>

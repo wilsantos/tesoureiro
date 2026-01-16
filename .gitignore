@@ -1,25 +1,27 @@
-# CakePHP 3
+# Arquivos sensíveis - NÃO FAZER COMMIT
+api/config/database.php
 
-/vendor/*
-/config/app.php
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/package-lock.json
+frontend/npm-debug.log
+frontend/yarn-error.log
 
-/tmp/cache/models/*
-!/tmp/cache/models/empty
-/tmp/cache/persistent/*
-!/tmp/cache/persistent/empty
-/tmp/cache/views/*
-!/tmp/cache/views/empty
-/tmp/sessions/*
-!/tmp/sessions/empty
-/tmp/tests/*
-!/tmp/tests/empty
+# Arquivos temporários
+*.zip
+*.log
+*.tmp
 
-/logs/*
-!/logs/empty
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+.DS_Store
+Thumbs.db
 
-# CakePHP 2
-
-/app/tmp/*
-/app/Config/core.php
-/app/Config/database.php
-/vendors/*
+# Sistema
+*.swp
+*.swo
+*~

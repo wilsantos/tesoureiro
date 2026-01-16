@@ -1,0 +1,155 @@
+<div>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Gerenciamento de Reuniões</h2>
+    <button class="btn btn-primary" (click)="openModal()">Nova Reunião</button>
+  </div>
+
+  <div class="form-group" style="margin-bottom: 20px; max-width: 300px;">
+    <label>Filtrar por Grupo</label>
+    <select [(ngModel)]="filtroGrupo" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <option [value]="null">Todos os grupos</option>
+      <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
+    </select>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Grupo</th>
+        <th>Data</th>
+        <th>Membros</th>
+        <th>Visitantes</th>
+        <th>Valor Sétima</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let reuniao of reunioes">
+        <td>{{ reuniao.Id }}</td>
+        <td>{{ reuniao.NomeGrupo || getGrupoNome(reuniao.IdGrupo) }}</td>
+        <td>{{ formatDate(reuniao.Data) }}</td>
+        <td>{{ reuniao.Membros }}</td>
+        <td>{{ reuniao.Visitantes }}</td>
+        <td>R$ {{ reuniao.ValorSetima }}</td>
+        <td>
+          <button class="btn btn-success" (click)="openModal(reuniao)">Editar</button>
+          <button class="btn btn-danger" (click)="deleteReuniao(reuniao.Id)">Excluir</button>
+        </td>
+      </tr>
+      <tr *ngIf="reunioes.length === 0">
+        <td colspan="7" style="text-align: center; padding: 20px;">
+          Nenhuma reunião cadastrada
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="modal" [class.show]="showModal">
+    <div class="modal-content">
+      <span class="close" (click)="closeModal()">&times;</span>
+      <h2>{{ isEdit ? 'Editar Reunião' : 'Nova Reunião' }}</h2>
+      
+      <div class="form-container">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Grupo *</label>
+            <select [(ngModel)]="reuniao.IdGrupo" required>
+              <option [value]="null">Selecione um grupo</option>
+              <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Data *</label>
+            <input type="date" [(ngModel)]="reuniao.Data" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Membros</label>
+            <input type="number" [(ngModel)]="reuniao.Membros" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>Visitantes</label>
+            <input type="number" [(ngModel)]="reuniao.Visitantes" min="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Valor Sétima</label>
+            <input type="number" step="0.01" [(ngModel)]="reuniao.ValorSetima" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>Valor Despesa</label>
+            <input type="number" step="0.01" [(ngModel)]="reuniao.ValorDespesa" min="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Descrição da Despesa</label>
+          <textarea [(ngModel)]="reuniao.DescricaoDespesa"></textarea>
+        </div>
+
+        <h3 style="margin-top: 20px; margin-bottom: 15px;">Novos Membros</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ingresso</label>
+            <input type="number" [(ngModel)]="reuniao.Ingresso" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>30 Dias</label>
+            <input type="number" [(ngModel)]="reuniao.TrintaDias" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>60 Dias</label>
+            <input type="number" [(ngModel)]="reuniao.SessentaDias" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>90 Dias</label>
+            <input type="number" [(ngModel)]="reuniao.NoventaDias" min="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>6 Meses</label>
+            <input type="number" [(ngModel)]="reuniao.SeisMeses" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>9 Meses</label>
+            <input type="number" [(ngModel)]="reuniao.NoveMeses" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>1 Ano</label>
+            <input type="number" [(ngModel)]="reuniao.UmAno" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>18 Meses</label>
+            <input type="number" [(ngModel)]="reuniao.DezoitoMeses" min="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Múltiplos Anos</label>
+          <input type="number" [(ngModel)]="reuniao.MultiplosAnos" min="0">
+        </div>
+
+        <div style="margin-top: 20px;">
+          <button class="btn btn-primary" (click)="saveReuniao()">Salvar</button>
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

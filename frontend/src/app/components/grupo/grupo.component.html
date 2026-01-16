@@ -1,0 +1,64 @@
+<div>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Gerenciamento de Grupos</h2>
+    <button class="btn btn-primary" (click)="openModal()">Novo Grupo</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Endereço</th>
+        <th>CSA</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let grupo of grupos">
+        <td>{{ grupo.Id }}</td>
+        <td>{{ grupo.Nome }}</td>
+        <td>{{ grupo.Endereco }}</td>
+        <td>{{ grupo.CSA }}</td>
+        <td>
+          <button class="btn btn-success" (click)="openModal(grupo)">Editar</button>
+          <button class="btn btn-danger" (click)="deleteGrupo(grupo.Id)">Excluir</button>
+        </td>
+      </tr>
+      <tr *ngIf="grupos.length === 0">
+        <td colspan="5" style="text-align: center; padding: 20px;">
+          Nenhum grupo cadastrado
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="modal" [class.show]="showModal">
+    <div class="modal-content">
+      <span class="close" (click)="closeModal()">&times;</span>
+      <h2>{{ isEdit ? 'Editar Grupo' : 'Novo Grupo' }}</h2>
+      
+      <div class="form-container">
+        <div class="form-group">
+          <label>Nome *</label>
+          <input type="text" [(ngModel)]="grupo.Nome" placeholder="Nome do grupo">
+        </div>
+
+        <div class="form-group">
+          <label>Endereço *</label>
+          <input type="text" [(ngModel)]="grupo.Endereco" placeholder="Endereço do grupo">
+        </div>
+
+        <div class="form-group">
+          <label>CSA *</label>
+          <input type="number" [(ngModel)]="grupo.CSA" placeholder="CSA">
+        </div>
+
+        <div style="margin-top: 20px;">
+          <button class="btn btn-primary" (click)="saveGrupo()">Salvar</button>
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
