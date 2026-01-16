@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 16/01/2026 às 02:31
+-- Tempo de geração: 16/01/2026 às 02:47
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -38,6 +38,21 @@ CREATE TABLE `csa` (
 
 INSERT INTO `csa` (`Id`, `Nome`) VALUES
 (1, 'CSA ABC'),
+(2, 'CSA Mauá Sem Fronteiras');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `despesas`
+--
+
+CREATE TABLE `despesas` (
+  `Id` int(11) NOT NULL,
+  `IdReuniao` int(11) NOT NULL,
+  `Descricao` varchar(400) NOT NULL,
+  `ValorDespesa` decimal(10,0) NOT NULL,
+  `Comprovante` mediumblob NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -52,6 +67,14 @@ CREATE TABLE `grupo` (
   `CSA` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
+--
+-- Despejando dados para a tabela `grupo`
+--
+
+INSERT INTO `grupo` (`Id`, `Nome`, `Endereco`, `CSA`) VALUES
+(1, 'Grupo Parque Erasmo', 'Rua Hipólito da Costa, 190 - Parque Erasmo - Santo André', 1),
+(2, 'Grupo Rudge Ramos', 'Rua Rio Feio, 58 - Vila Vivaldi - São Bernardo do Campo', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -64,9 +87,8 @@ CREATE TABLE `reuniao` (
   `Data` date NOT NULL,
   `Membros` int(11) NOT NULL,
   `Visitantes` int(11) NOT NULL,
-  `ValorSetima` decimal(10,0) NOT NULL,
-  `ValorDespesa` decimal(10,0) NOT NULL,
-  `DescricaoDespesa` varchar(4000) NOT NULL,
+  `ValorSetima` decimal(12,2) NOT NULL,
+  `ValorSetimaPix` decimal(12,2) NOT NULL,
   `Ingresso` int(11) NOT NULL,
   `TrintaDias` int(11) NOT NULL,
   `SessentaDias` int(11) NOT NULL,
@@ -75,7 +97,8 @@ CREATE TABLE `reuniao` (
   `NoveMeses` int(11) NOT NULL,
   `UmAno` int(11) NOT NULL,
   `DezoitoMeses` int(11) NOT NULL,
-  `MultiplosAnos` int(11) NOT NULL
+  `MultiplosAnos` int(11) NOT NULL,
+  `FatosRelevantes` varchar(4000) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -86,6 +109,12 @@ CREATE TABLE `reuniao` (
 -- Índices de tabela `csa`
 --
 ALTER TABLE `csa`
+  ADD PRIMARY KEY (`Id`);
+
+--
+-- Índices de tabela `despesas`
+--
+ALTER TABLE `despesas`
   ADD PRIMARY KEY (`Id`);
 
 --
@@ -111,10 +140,16 @@ ALTER TABLE `csa`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT de tabela `despesas`
+--
+ALTER TABLE `despesas`
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `grupo`
 --
 ALTER TABLE `grupo`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `reuniao`

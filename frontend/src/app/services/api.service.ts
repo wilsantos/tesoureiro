@@ -37,8 +37,26 @@ export class ApiService {
   }
 
   // Métodos para Reunião
-  getReunioes(idGrupo?: number): Observable<any> {
-    const url = idGrupo ? `${API_URL}/reuniao/?IdGrupo=${idGrupo}` : `${API_URL}/reuniao/`;
+  getReunioes(filtros?: { idGrupo?: number, mes?: number, ano?: number }): Observable<any> {
+    let url = `${API_URL}/reuniao/`;
+    const params: string[] = [];
+    
+    if (filtros) {
+      if (filtros.idGrupo) {
+        params.push(`IdGrupo=${filtros.idGrupo}`);
+      }
+      if (filtros.mes) {
+        params.push(`mes=${filtros.mes}`);
+      }
+      if (filtros.ano) {
+        params.push(`ano=${filtros.ano}`);
+      }
+      
+      if (params.length > 0) {
+        url += '?' + params.join('&');
+      }
+    }
+    
     return this.http.get(url);
   }
 
@@ -61,5 +79,27 @@ export class ApiService {
   // Métodos para CSA
   getCSAs(): Observable<any> {
     return this.http.get(`${API_URL}/csa/`);
+  }
+
+  // Métodos para Despesas
+  getDespesas(idReuniao?: number): Observable<any> {
+    const url = idReuniao ? `${API_URL}/despesas/?IdReuniao=${idReuniao}` : `${API_URL}/despesas/`;
+    return this.http.get(url);
+  }
+
+  getDespesa(id: number): Observable<any> {
+    return this.http.get(`${API_URL}/despesas/?id=${id}`);
+  }
+
+  createDespesa(despesa: any): Observable<any> {
+    return this.http.post(`${API_URL}/despesas/`, despesa);
+  }
+
+  updateDespesa(despesa: any): Observable<any> {
+    return this.http.put(`${API_URL}/despesas/`, despesa);
+  }
+
+  deleteDespesa(id: number): Observable<any> {
+    return this.http.delete(`${API_URL}/despesas/?id=${id}`);
   }
 }

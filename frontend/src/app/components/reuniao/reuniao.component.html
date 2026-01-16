@@ -4,12 +4,36 @@
     <button class="btn btn-primary" (click)="openModal()">Nova Reunião</button>
   </div>
 
-  <div class="form-group" style="margin-bottom: 20px; max-width: 300px;">
-    <label>Filtrar por Grupo</label>
-    <select [(ngModel)]="filtroGrupo" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-      <option [value]="null">Todos os grupos</option>
-      <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
-    </select>
+  <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <p style="margin: 0; color: #666;">
+      <strong>Instruções:</strong> Selecione Mês, Ano e Grupo para visualizar as reuniões.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+    <div class="form-group" style="max-width: 200px;">
+      <label>Mês *</label>
+      <select [(ngModel)]="filtroMes" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <option [value]="null">Selecione o mês</option>
+        <option *ngFor="let mes of getMeses()" [value]="mes.valor">{{ mes.nome }}</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="max-width: 150px;">
+      <label>Ano *</label>
+      <select [(ngModel)]="filtroAno" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <option [value]="null">Selecione o ano</option>
+        <option *ngFor="let ano of getAnos()" [value]="ano">{{ ano }}</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="max-width: 250px;">
+      <label>Grupo *</label>
+      <select [(ngModel)]="filtroGrupo" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <option [value]="null">Selecione o grupo</option>
+        <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
+      </select>
+    </div>
   </div>
 
   <table>
@@ -85,14 +109,14 @@
           </div>
 
           <div class="form-group">
-            <label>Valor Despesa</label>
-            <input type="number" step="0.01" [(ngModel)]="reuniao.ValorDespesa" min="0">
+            <label>Valor Sétima PIX</label>
+            <input type="number" step="0.01" [(ngModel)]="reuniao.ValorSetimaPix" min="0">
           </div>
         </div>
 
         <div class="form-group">
-          <label>Descrição da Despesa</label>
-          <textarea [(ngModel)]="reuniao.DescricaoDespesa"></textarea>
+          <label>Fatos Relevantes</label>
+          <textarea [(ngModel)]="reuniao.FatosRelevantes" rows="4"></textarea>
         </div>
 
         <h3 style="margin-top: 20px; margin-bottom: 15px;">Novos Membros</h3>
@@ -145,9 +169,85 @@
           <input type="number" [(ngModel)]="reuniao.MultiplosAnos" min="0">
         </div>
 
+        <!-- Seção de Despesas -->
+        <div style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>Despesas</h3>
+            <button type="button" class="btn btn-primary" (click)="openDespesaModal()" [disabled]="!reuniao.Id">
+              Adicionar Despesa
+            </button>
+          </div>
+          
+          <div *ngIf="!reuniao.Id" style="padding: 10px; background-color: #fff3cd; border-radius: 4px; margin-bottom: 15px;">
+            <small>Salve a reunião primeiro para adicionar despesas</small>
+          </div>
+
+          <table *ngIf="reuniao.Id && despesas.length > 0" style="margin-top: 10px;">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Comprovante</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let despesa of despesas">
+                <td>{{ despesa.Descricao }}</td>
+                <td>R$ {{ despesa.ValorDespesa }}</td>
+                <td>
+                  <span *ngIf="despesa.Comprovante">Sim</span>
+                  <span *ngIf="!despesa.Comprovante">Não</span>
+                </td>
+                <td>
+                  <button class="btn btn-success" (click)="openDespesaModal(despesa)">Editar</button>
+                  <button class="btn btn-danger" (click)="deleteDespesa(despesa.Id)">Excluir</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="reuniao.Id && despesas.length === 0" style="text-align: center; padding: 20px; color: #666;">
+            Nenhuma despesa cadastrada
+          </div>
+        </div>
+
         <div style="margin-top: 20px;">
-          <button class="btn btn-primary" (click)="saveReuniao()">Salvar</button>
+          <button class="btn btn-primary" (click)="saveReuniao()">Salvar Reunião</button>
           <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Despesa -->
+  <div class="modal" [class.show]="showDespesaModal">
+    <div class="modal-content">
+      <span class="close" (click)="closeDespesaModal()">&times;</span>
+      <h2>{{ isEditDespesa ? 'Editar Despesa' : 'Nova Despesa' }}</h2>
+      
+      <div class="form-container">
+        <div class="form-group">
+          <label>Descrição *</label>
+          <input type="text" [(ngModel)]="despesa.Descricao" placeholder="Descrição da despesa" required>
+        </div>
+
+        <div class="form-group">
+          <label>Valor *</label>
+          <input type="number" step="0.01" [(ngModel)]="despesa.ValorDespesa" min="0" placeholder="0.00" required>
+        </div>
+
+        <div class="form-group">
+          <label>Comprovante</label>
+          <input type="file" (change)="onFileSelected($event)" accept="image/*,application/pdf">
+          <small style="display: block; margin-top: 5px; color: #666;">
+            Formatos aceitos: Imagens (JPG, PNG) ou PDF
+          </small>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <button class="btn btn-primary" (click)="saveDespesa()">Salvar</button>
+          <button class="btn btn-secondary" (click)="closeDespesaModal()">Cancelar</button>
         </div>
       </div>
     </div>

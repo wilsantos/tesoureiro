@@ -43,16 +43,43 @@ switch ($method) {
                 http_response_code(404);
                 echo json_encode(['message' => 'Reunião não encontrada'], JSON_UNESCAPED_UNICODE);
             }
-        } else if (isset($_GET['IdGrupo'])) {
-            // Listar reuniões de um grupo específico
-            $idGrupo = $_GET['IdGrupo'];
-            $stmt = $conn->prepare("SELECT * FROM reuniao WHERE IdGrupo = ? ORDER BY Data DESC");
-            $stmt->execute([$idGrupo]);
-            $reunioes = $stmt->fetchAll();
-            echo json_encode($reunioes, JSON_UNESCAPED_UNICODE);
         } else {
-            // Listar todas as reuniões
-            $stmt = $conn->query("SELECT r.*, g.Nome as NomeGrupo FROM reuniao r LEFT JOIN grupo g ON r.IdGrupo = g.Id ORDER BY r.Data DESC");
+            // Construir query com filtros
+            $where = [];
+            $params = [];
+            
+            // Filtro por grupo
+            if (isset($_GET['IdGrupo']) && $_GET['IdGrupo'] !== '' && $_GET['IdGrupo'] !== null) {
+                $where[] = "r.IdGrupo = ?";
+                $params[] = $_GET['IdGrupo'];
+            }
+            
+            // Filtro por mês
+            if (isset($_GET['mes']) && $_GET['mes'] !== '' && $_GET['mes'] !== null) {
+                $where[] = "MONTH(r.Data) = ?";
+                $params[] = $_GET['mes'];
+            }
+            
+            // Filtro por ano
+            if (isset($_GET['ano']) && $_GET['ano'] !== '' && $_GET['ano'] !== null) {
+                $where[] = "YEAR(r.Data) = ?";
+                $params[] = $_GET['ano'];
+            }
+            
+            // Montar query
+            $sql = "SELECT r.*, g.Nome as NomeGrupo FROM reuniao r LEFT JOIN grupo g ON r.IdGrupo = g.Id";
+            if (!empty($where)) {
+                $sql .= " WHERE " . implode(" AND ", $where);
+            }
+            $sql .= " ORDER BY r.Data DESC";
+            
+            if (!empty($params)) {
+                $stmt = $conn->prepare($sql);
+                $stmt->execute($params);
+            } else {
+                $stmt = $conn->query($sql);
+            }
+            
             $reunioes = $stmt->fetchAll();
             echo json_encode($reunioes, JSON_UNESCAPED_UNICODE);
         }
@@ -67,9 +94,9 @@ switch ($method) {
             break;
         }
         
-        $required = ['IdGrupo', 'Data', 'Membros', 'Visitantes', 'ValorSetima', 'ValorDespesa', 
-                     'DescricaoDespesa', 'Ingresso', 'TrintaDias', 'SessentaDias', 'NoventaDias', 
-                     'SeisMeses', 'NoveMeses', 'UmAno', 'DezoitoMeses', 'MultiplosAnos'];
+        $required = ['IdGrupo', 'Data', 'Membros', 'Visitantes', 'ValorSetima', 'ValorSetimaPix', 
+                     'Ingresso', 'TrintaDias', 'SessentaDias', 'NoventaDias', 
+                     'SeisMeses', 'NoveMeses', 'UmAno', 'DezoitoMeses', 'MultiplosAnos', 'FatosRelevantes'];
         
         $missing = [];
         foreach ($required as $field) {
@@ -85,16 +112,16 @@ switch ($method) {
         }
 
         try {
-            $stmt = $conn->prepare("INSERT INTO reuniao (IdGrupo, Data, Membros, Visitantes, ValorSetima, ValorDespesa, 
-                                  DescricaoDespesa, Ingresso, TrintaDias, SessentaDias, NoventaDias, SeisMeses, 
-                                  NoveMeses, UmAno, DezoitoMeses, MultiplosAnos) 
+            $stmt = $conn->prepare("INSERT INTO reuniao (IdGrupo, Data, Membros, Visitantes, ValorSetima, ValorSetimaPix, 
+                                  Ingresso, TrintaDias, SessentaDias, NoventaDias, SeisMeses, 
+                                  NoveMeses, UmAno, DezoitoMeses, MultiplosAnos, FatosRelevantes) 
                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             if ($stmt->execute([
                 $data['IdGrupo'], $data['Data'], $data['Membros'], $data['Visitantes'],
-                $data['ValorSetima'], $data['ValorDespesa'], $data['DescricaoDespesa'], $data['Ingresso'],
+                $data['ValorSetima'], $data['ValorSetimaPix'], $data['Ingresso'],
                 $data['TrintaDias'], $data['SessentaDias'], $data['NoventaDias'], $data['SeisMeses'],
-                $data['NoveMeses'], $data['UmAno'], $data['DezoitoMeses'], $data['MultiplosAnos']
+                $data['NoveMeses'], $data['UmAno'], $data['DezoitoMeses'], $data['MultiplosAnos'], $data['FatosRelevantes']
             ])) {
                 $id = $conn->lastInsertId();
                 http_response_code(201);
@@ -121,9 +148,9 @@ switch ($method) {
             break;
         }
 
-        $required = ['IdGrupo', 'Data', 'Membros', 'Visitantes', 'ValorSetima', 'ValorDespesa', 
-                     'DescricaoDespesa', 'Ingresso', 'TrintaDias', 'SessentaDias', 'NoventaDias', 
-                     'SeisMeses', 'NoveMeses', 'UmAno', 'DezoitoMeses', 'MultiplosAnos'];
+        $required = ['IdGrupo', 'Data', 'Membros', 'Visitantes', 'ValorSetima', 'ValorSetimaPix', 
+                     'Ingresso', 'TrintaDias', 'SessentaDias', 'NoventaDias', 
+                     'SeisMeses', 'NoveMeses', 'UmAno', 'DezoitoMeses', 'MultiplosAnos', 'FatosRelevantes'];
         
         foreach ($required as $field) {
             if (!isset($data[$field])) {
@@ -134,16 +161,16 @@ switch ($method) {
         }
 
         $stmt = $conn->prepare("UPDATE reuniao SET IdGrupo = ?, Data = ?, Membros = ?, Visitantes = ?, 
-                              ValorSetima = ?, ValorDespesa = ?, DescricaoDespesa = ?, Ingresso = ?, 
+                              ValorSetima = ?, ValorSetimaPix = ?, Ingresso = ?, 
                               TrintaDias = ?, SessentaDias = ?, NoventaDias = ?, SeisMeses = ?, 
-                              NoveMeses = ?, UmAno = ?, DezoitoMeses = ?, MultiplosAnos = ? 
+                              NoveMeses = ?, UmAno = ?, DezoitoMeses = ?, MultiplosAnos = ?, FatosRelevantes = ? 
                               WHERE Id = ?");
         
         if ($stmt->execute([
             $data['IdGrupo'], $data['Data'], $data['Membros'], $data['Visitantes'],
-            $data['ValorSetima'], $data['ValorDespesa'], $data['DescricaoDespesa'], $data['Ingresso'],
+            $data['ValorSetima'], $data['ValorSetimaPix'], $data['Ingresso'],
             $data['TrintaDias'], $data['SessentaDias'], $data['NoventaDias'], $data['SeisMeses'],
-            $data['NoveMeses'], $data['UmAno'], $data['DezoitoMeses'], $data['MultiplosAnos'], $data['Id']
+            $data['NoveMeses'], $data['UmAno'], $data['DezoitoMeses'], $data['MultiplosAnos'], $data['FatosRelevantes'], $data['Id']
         ])) {
             echo json_encode(['message' => 'Reunião atualizada com sucesso'], JSON_UNESCAPED_UNICODE);
         } else {
