@@ -19,7 +19,7 @@
         <td>{{ grupo.Id }}</td>
         <td>{{ grupo.Nome }}</td>
         <td>{{ grupo.Endereco }}</td>
-        <td>{{ grupo.CSA }}</td>
+        <td>{{ grupo.CSA_Nome }}</td>
         <td>
           <button class="btn btn-success" (click)="openModal(grupo)">Editar</button>
           <button class="btn btn-danger" (click)="deleteGrupo(grupo.Id)">Excluir</button>
@@ -51,7 +51,10 @@
 
         <div class="form-group">
           <label>CSA *</label>
-          <input type="number" [(ngModel)]="grupo.CSA" placeholder="CSA">
+          <select [(ngModel)]="grupo.CSA" required>
+            <option value="">Selecione um CSA</option>
+            <option *ngFor="let csa of csas" [value]="csa.Id">{{ csa.Nome }}</option>
+          </select>
         </div>
 
         <div style="margin-top: 20px;">

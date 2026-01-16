@@ -12,6 +12,7 @@ import { ApiService } from '../../services/api.service';
 })
 export class GrupoComponent implements OnInit {
   grupos: any[] = [];
+  csas: any[] = [];
   grupo: any = {
     Id: null,
     Nome: '',
@@ -25,6 +26,7 @@ export class GrupoComponent implements OnInit {
 
   ngOnInit() {
     this.loadGrupos();
+    this.loadCSAs();
   }
 
   loadGrupos() {
@@ -35,6 +37,18 @@ export class GrupoComponent implements OnInit {
       error: (error) => {
         console.error('Erro ao carregar grupos:', error);
         alert('Erro ao carregar grupos');
+      }
+    });
+  }
+
+  loadCSAs() {
+    this.apiService.getCSAs().subscribe({
+      next: (data) => {
+        this.csas = data;
+      },
+      error: (error) => {
+        console.error('Erro ao carregar CSAs:', error);
+        alert('Erro ao carregar CSAs');
       }
     });
   }
@@ -66,14 +80,20 @@ export class GrupoComponent implements OnInit {
   }
 
   saveGrupo() {
-    if (!this.grupo.Nome || !this.grupo.Endereco) {
+    if (!this.grupo.Nome || !this.grupo.Endereco || !this.grupo.CSA) {
       alert('Preencha todos os campos obrigatórios');
       return;
     }
 
+    // Garantir que CSA seja um número
+    const grupoParaSalvar = {
+      ...this.grupo,
+      CSA: parseInt(this.grupo.CSA, 10)
+    };
+
     const operacao = this.isEdit 
-      ? this.apiService.updateGrupo(this.grupo)
-      : this.apiService.createGrupo(this.grupo);
+      ? this.apiService.updateGrupo(grupoParaSalvar)
+      : this.apiService.createGrupo(grupoParaSalvar);
 
     operacao.subscribe({
       next: (response) => {

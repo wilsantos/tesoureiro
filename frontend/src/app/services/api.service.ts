@@ -57,4 +57,9 @@ export class ApiService {
   deleteReuniao(id: number): Observable<any> {
     return this.http.delete(`${API_URL}/reuniao/?id=${id}`);
   }
+
+  // Métodos para CSA
+  getCSAs(): Observable<any> {
+    return this.http.get(`${API_URL}/csa/`);
+  }
 }

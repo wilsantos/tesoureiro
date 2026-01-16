@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 16/01/2026 às 01:52
+-- Tempo de geração: 16/01/2026 às 02:31
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -24,15 +24,33 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `csa`
+--
+
+CREATE TABLE `csa` (
+  `Id` int(11) NOT NULL,
+  `Nome` varchar(400) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `csa`
+--
+
+INSERT INTO `csa` (`Id`, `Nome`) VALUES
+(1, 'CSA ABC'),
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `grupo`
 --
 
 CREATE TABLE `grupo` (
   `Id` int(11) NOT NULL,
-  `Nome` varchar(4000) NOT NULL,
-  `Endereco` varchar(4000) NOT NULL,
+  `Nome` varchar(4000) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `Endereco` varchar(4000) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `CSA` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
@@ -58,7 +76,51 @@ CREATE TABLE `reuniao` (
   `UmAno` int(11) NOT NULL,
   `DezoitoMeses` int(11) NOT NULL,
   `MultiplosAnos` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Índices para tabelas despejadas
+--
+
+--
+-- Índices de tabela `csa`
+--
+ALTER TABLE `csa`
+  ADD PRIMARY KEY (`Id`);
+
+--
+-- Índices de tabela `grupo`
+--
+ALTER TABLE `grupo`
+  ADD PRIMARY KEY (`Id`);
+
+--
+-- Índices de tabela `reuniao`
+--
+ALTER TABLE `reuniao`
+  ADD PRIMARY KEY (`Id`);
+
+--
+-- AUTO_INCREMENT para tabelas despejadas
+--
+
+--
+-- AUTO_INCREMENT de tabela `csa`
+--
+ALTER TABLE `csa`
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de tabela `grupo`
+--
+ALTER TABLE `grupo`
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de tabela `reuniao`
+--
+ALTER TABLE `reuniao`
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

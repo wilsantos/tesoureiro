@@ -33,7 +33,9 @@ switch ($method) {
         if (isset($_GET['id'])) {
             // Buscar grupo específico
             $id = $_GET['id'];
-            $stmt = $conn->prepare("SELECT * FROM grupo WHERE Id = ?");
+            $stmt = $conn->prepare("SELECT 
+                grupo.*, CSA.Nome as CSA_Nome FROM grupo INNER JOIN CSA ON grupo.CSA = CSA.Id 
+                WHERE grupo.Id = ?");
             $stmt->execute([$id]);
             $grupo = $stmt->fetch();
             
@@ -45,7 +47,9 @@ switch ($method) {
             }
         } else {
             // Listar todos os grupos
-            $stmt = $conn->query("SELECT * FROM grupo ORDER BY Nome");
+            $stmt = $conn->query("SELECT 
+                grupo.*, CSA.Nome as CSA_Nome FROM grupo INNER JOIN CSA ON grupo.CSA = CSA.Id 
+                ORDER BY grupo.Nome");
             $grupos = $stmt->fetchAll();
             echo json_encode($grupos, JSON_UNESCAPED_UNICODE);
         }
