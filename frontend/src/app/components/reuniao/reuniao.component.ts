@@ -13,6 +13,7 @@ import { ApiService } from '../../services/api.service';
 export class ReuniaoComponent implements OnInit {
   reunioes: any[] = [];
   grupos: any[] = [];
+  despesasPorReuniao: Map<number, number> = new Map(); // Map<IdReuniao, TotalDespesas>
   reuniao: any = {
     Id: null,
     IdGrupo: null,
@@ -101,6 +102,7 @@ export class ReuniaoComponent implements OnInit {
       next: (data) => {
         if (Array.isArray(data)) {
           this.reunioes = data;
+          this.carregarDespesas();
         } else {
           console.error('Resposta inválida da API:', data);
           this.reunioes = [];
@@ -110,6 +112,34 @@ export class ReuniaoComponent implements OnInit {
         console.error('Erro ao carregar reuniões:', error);
         alert('Erro ao carregar reuniões: ' + (error.error?.message || error.message || 'Erro desconhecido'));
         this.reunioes = [];
+      }
+    });
+  }
+
+  carregarDespesas() {
+    // Limpar mapa anterior
+    this.despesasPorReuniao.clear();
+    
+    // Carregar todas as despesas (sem filtro de reunião)
+    this.apiService.getDespesas().subscribe({
+      next: (despesas) => {
+        if (Array.isArray(despesas)) {
+          // Agrupar despesas por IdReuniao e somar os valores
+          despesas.forEach(despesa => {
+            const idReuniao = despesa.IdReuniao;
+            const valor = parseFloat(despesa.ValorDespesa) || 0;
+            
+            if (this.despesasPorReuniao.has(idReuniao)) {
+              this.despesasPorReuniao.set(idReuniao, this.despesasPorReuniao.get(idReuniao)! + valor);
+            } else {
+              this.despesasPorReuniao.set(idReuniao, valor);
+            }
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Erro ao carregar despesas:', error);
+        // Não mostrar alerta, apenas logar o erro
       }
     });
   }
@@ -277,6 +307,8 @@ export class ReuniaoComponent implements OnInit {
         alert(this.isEditDespesa ? 'Despesa atualizada com sucesso!' : 'Despesa criada com sucesso!');
         this.closeDespesaModal();
         this.loadDespesas(this.reuniao.Id);
+        // Recarregar o mapa de despesas para atualizar o grid
+        this.carregarDespesas();
       },
       error: (error) => {
         console.error('Erro ao salvar despesa:', error);
@@ -292,6 +324,8 @@ export class ReuniaoComponent implements OnInit {
         next: () => {
           alert('Despesa excluída com sucesso!');
           this.loadDespesas(this.reuniao.Id);
+          // Recarregar o mapa de despesas para atualizar o grid
+          this.carregarDespesas();
         },
         error: (error) => {
           console.error('Erro ao excluir despesa:', error);
@@ -386,5 +420,19 @@ export class ReuniaoComponent implements OnInit {
     const mes = String(d.getUTCMonth() + 1).padStart(2, '0');
     const ano = d.getUTCFullYear();
     return `${dia}/${mes}/${ano}`;
+  }
+
+  getTotalSetima(reuniao: any): number {
+    const valorSetima = parseFloat(reuniao.ValorSetima) || 0;
+    const valorSetimaPix = parseFloat(reuniao.ValorSetimaPix) || 0;
+    return valorSetima + valorSetimaPix;
+  }
+
+  getTotalDespesas(idReuniao: number): number {
+    return this.despesasPorReuniao.get(idReuniao) || 0;
+  }
+
+  formatCurrency(value: number): string {
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 }

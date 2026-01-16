@@ -64,8 +64,10 @@ CREATE TABLE `grupo` (
   `Id` int(11) NOT NULL,
   `Nome` varchar(4000) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `Endereco` varchar(4000) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `CSA` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  `CSA` int(11) NOT NULL,
+  `Saldo` decimal(12,2) NOT NULL,
+  `DataSaldo` date DEFAULT NULL
+)ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 
 --
 -- Despejando dados para a tabela `grupo`

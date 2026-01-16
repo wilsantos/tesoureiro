@@ -11,11 +11,11 @@
   </div>
 
   <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-    <div class="form-group" style="max-width: 200px;">
-      <label>Mês *</label>
-      <select [(ngModel)]="filtroMes" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <option [value]="null">Selecione o mês</option>
-        <option *ngFor="let mes of getMeses()" [value]="mes.valor">{{ mes.nome }}</option>
+    <div class="form-group" style="max-width: 250px;">
+      <label>Grupo *</label>
+      <select [(ngModel)]="filtroGrupo" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <option [value]="null">Selecione o grupo</option>
+        <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
       </select>
     </div>
 
@@ -27,13 +27,14 @@
       </select>
     </div>
 
-    <div class="form-group" style="max-width: 250px;">
-      <label>Grupo *</label>
-      <select [(ngModel)]="filtroGrupo" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <option [value]="null">Selecione o grupo</option>
-        <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
+    <div class="form-group" style="max-width: 200px;">
+      <label>Mês *</label>
+      <select [(ngModel)]="filtroMes" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <option [value]="null">Selecione o mês</option>
+        <option *ngFor="let mes of getMeses()" [value]="mes.valor">{{ mes.nome }}</option>
       </select>
     </div>
+
   </div>
 
   <table>
@@ -44,7 +45,8 @@
         <th>Data</th>
         <th>Membros</th>
         <th>Visitantes</th>
-        <th>Valor Sétima</th>
+        <th>Total Sétima</th>
+        <th>Total Despesas</th>
         <th>Ações</th>
       </tr>
     </thead>
@@ -55,14 +57,15 @@
         <td>{{ formatDate(reuniao.Data) }}</td>
         <td>{{ reuniao.Membros }}</td>
         <td>{{ reuniao.Visitantes }}</td>
-        <td>R$ {{ reuniao.ValorSetima }}</td>
+        <td>R$ {{ formatCurrency(getTotalSetima(reuniao)) }}</td>
+        <td>R$ {{ formatCurrency(getTotalDespesas(reuniao.Id)) }}</td>
         <td>
           <button class="btn btn-success" (click)="openModal(reuniao)">Editar</button>
           <button class="btn btn-danger" (click)="deleteReuniao(reuniao.Id)">Excluir</button>
         </td>
       </tr>
       <tr *ngIf="reunioes.length === 0">
-        <td colspan="7" style="text-align: center; padding: 20px;">
+        <td colspan="8" style="text-align: center; padding: 20px;">
           Nenhuma reunião cadastrada
         </td>
       </tr>

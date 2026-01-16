@@ -17,7 +17,9 @@ export class GrupoComponent implements OnInit {
     Id: null,
     Nome: '',
     Endereco: '',
-    CSA: 0
+    CSA: 0,
+    Saldo: 0,
+    DataSaldo: null
   };
   showModal: boolean = false;
   isEdit: boolean = false;
@@ -62,7 +64,9 @@ export class GrupoComponent implements OnInit {
         Id: null,
         Nome: '',
         Endereco: '',
-        CSA: 0
+        CSA: 0,
+        Saldo: 0,
+        DataSaldo: null
       };
       this.isEdit = false;
     }
@@ -75,7 +79,9 @@ export class GrupoComponent implements OnInit {
       Id: null,
       Nome: '',
       Endereco: '',
-      CSA: 0
+      CSA: 0,
+      Saldo: 0,
+      DataSaldo: null
     };
   }
 
@@ -85,10 +91,12 @@ export class GrupoComponent implements OnInit {
       return;
     }
 
-    // Garantir que CSA seja um número
+    // Garantir que os valores numéricos sejam corretos
     const grupoParaSalvar = {
       ...this.grupo,
-      CSA: parseInt(this.grupo.CSA, 10)
+      CSA: parseInt(this.grupo.CSA, 10),
+      Saldo: parseFloat(this.grupo.Saldo) || 0,
+      DataSaldo: this.grupo.DataSaldo || null
     };
 
     const operacao = this.isEdit 
@@ -124,5 +132,25 @@ export class GrupoComponent implements OnInit {
         }
       });
     }
+  }
+
+  formatDate(date: string | null): string {
+    if (!date) return '';
+    
+    // Parsear a data manualmente para evitar problemas de timezone
+    // Formato esperado: YYYY-MM-DD
+    const partes = date.split('-');
+    if (partes.length === 3) {
+      const ano = partes[0];
+      const mes = partes[1];
+      const dia = partes[2];
+      return `${dia}/${mes}/${ano}`;
+    }
+    
+    return date;
+  }
+
+  formatCurrency(value: number): string {
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 }

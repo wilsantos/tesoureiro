@@ -14,7 +14,7 @@ require_once '../config/database.php';
 
 // Habilitar exibição de erros para debug (remover em produção se necessário)
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -71,8 +71,12 @@ switch ($method) {
         }
 
         try {
-            $stmt = $conn->prepare("INSERT INTO grupo (Nome, Endereco, CSA) VALUES (?, ?, ?)");
-            if ($stmt->execute([$data['Nome'], $data['Endereco'], $data['CSA']])) {
+            // Saldo e DataSaldo são opcionais, usar valores padrão se não fornecidos
+            $saldo = isset($data['Saldo']) ? $data['Saldo'] : 0;
+            $dataSaldo = isset($data['DataSaldo']) && $data['DataSaldo'] !== '' ? $data['DataSaldo'] : null;
+            
+            $stmt = $conn->prepare("INSERT INTO grupo (Nome, Endereco, CSA, Saldo, DataSaldo) VALUES (?, ?, ?, ?, ?)");
+            if ($stmt->execute([$data['Nome'], $data['Endereco'], $data['CSA'], $saldo, $dataSaldo])) {
                 $id = $conn->lastInsertId();
                 http_response_code(201);
                 echo json_encode(['message' => 'Grupo criado com sucesso', 'id' => $id], JSON_UNESCAPED_UNICODE);
@@ -98,8 +102,12 @@ switch ($method) {
             break;
         }
 
-        $stmt = $conn->prepare("UPDATE grupo SET Nome = ?, Endereco = ?, CSA = ? WHERE Id = ?");
-        if ($stmt->execute([$data['Nome'], $data['Endereco'], $data['CSA'], $data['Id']])) {
+        // Saldo e DataSaldo são opcionais, usar valores padrão se não fornecidos
+        $saldo = isset($data['Saldo']) ? $data['Saldo'] : 0;
+        $dataSaldo = isset($data['DataSaldo']) && $data['DataSaldo'] !== '' ? $data['DataSaldo'] : null;
+
+        $stmt = $conn->prepare("UPDATE grupo SET Nome = ?, Endereco = ?, CSA = ?, Saldo = ?, DataSaldo = ? WHERE Id = ?");
+        if ($stmt->execute([$data['Nome'], $data['Endereco'], $data['CSA'], $saldo, $dataSaldo, $data['Id']])) {
             echo json_encode(['message' => 'Grupo atualizado com sucesso'], JSON_UNESCAPED_UNICODE);
         } else {
             http_response_code(500);
