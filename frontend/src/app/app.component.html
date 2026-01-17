@@ -10,8 +10,12 @@
     <button class="nav-tab" [class.active]="activeTab === 'reunioes'" (click)="setActiveTab('reunioes')">
       Reuniões
     </button>
+    <button class="nav-tab" [class.active]="activeTab === 'relatorios'" (click)="setActiveTab('relatorios')">
+      Relatórios
+    </button>
   </div>
 
   <app-grupo *ngIf="activeTab === 'grupos'"></app-grupo>
   <app-reuniao *ngIf="activeTab === 'reunioes'"></app-reuniao>
+  <app-relatorios *ngIf="activeTab === 'relatorios'"></app-relatorios>
 </div>

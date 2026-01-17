@@ -1,0 +1,195 @@
+<div>
+  <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Relatórios</h2>
+  </div>
+
+  <div class="info-box" style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <p style="margin: 0; color: #666;">
+      Selecione o tipo de relatório, grupo, mês e ano para gerar o relatório.
+    </p>
+  </div>
+
+  <div class="form-container" style="margin-bottom: 30px;">
+    <div class="form-row form-row-duas-colunas">
+      <div class="form-group">
+        <label>Tipo de Relatório *</label>
+        <select [(ngModel)]="tipoRelatorio" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <option value="geral">Relatório Geral de Reuniões</option>
+          <option value="detalhado">Relatório Detalhado de Sétima e Despesas</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Grupo *</label>
+        <select [(ngModel)]="filtroGrupo" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <option [value]="null">Selecione o grupo</option>
+          <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Mês *</label>
+        <select [(ngModel)]="filtroMes" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <option [value]="null">Selecione o mês</option>
+          <option *ngFor="let mes of getMeses()" [value]="mes.valor">{{ mes.nome }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Ano *</label>
+        <select [(ngModel)]="filtroAno" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <option [value]="null">Selecione o ano</option>
+          <option *ngFor="let ano of getAnos()" [value]="ano">{{ ano }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button class="btn btn-primary" (click)="gerarRelatorio()" [disabled]="carregando">
+        {{ carregando ? 'Gerando...' : 'Gerar Relatório' }}
+      </button>
+      <button *ngIf="relatorioGeral || relatorioDetalhado" class="btn btn-secondary" (click)="imprimirRelatorio()" style="margin-left: 10px;">
+        Imprimir
+      </button>
+    </div>
+  </div>
+
+  <!-- Relatório Geral -->
+  <div *ngIf="relatorioGeral" class="relatorio-container">
+    <div class="relatorio-header">
+      <h2>Relatório Geral de Reuniões</h2>
+      <p><strong>Grupo:</strong> {{ relatorioGeral.grupo }}</p>
+      <p><strong>Período:</strong> {{ getNomeMes(relatorioGeral.mes) }} de {{ relatorioGeral.ano }}</p>
+    </div>
+
+    <div class="totais-box">
+      <h3>Totais do Mês</h3>
+      <div class="totais-grid">
+        <div class="total-item">
+          <label>Total de Reuniões</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalReunioes }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total de Membros</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalMembros }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total de Visitantes</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalVisitantes }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total Sétima (Dinheiro)</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioGeral.totais.TotalSetimaMes) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total Sétima (PIX)</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioGeral.totais.TotalSetimaPixMes) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total Sétima Geral</label>
+          <span class="valor destaque">R$ {{ formatCurrency(relatorioGeral.totais.TotalSetimaMes + relatorioGeral.totais.TotalSetimaPixMes) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total Novos Membros</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalNovosMembros }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reunioes-list">
+      <h3>Reuniões do Mês</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Membros</th>
+            <th>Visitantes</th>
+            <th>Sétima</th>
+            <th>Sétima PIX</th>
+            <th>Total Sétima</th>
+            <th>Novos Membros</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let reuniao of relatorioGeral.reunioes">
+            <td>{{ formatDate(reuniao.Data) }}</td>
+            <td>{{ reuniao.Membros }}</td>
+            <td>{{ reuniao.Visitantes }}</td>
+            <td>R$ {{ formatCurrency(reuniao.ValorSetima) }}</td>
+            <td>R$ {{ formatCurrency(reuniao.ValorSetimaPix) }}</td>
+            <td>R$ {{ formatCurrency(reuniao.ValorSetima + reuniao.ValorSetimaPix) }}</td>
+            <td>{{ reuniao.Ingresso + reuniao.TrintaDias + reuniao.SessentaDias + reuniao.NoventaDias + reuniao.SeisMeses + reuniao.NoveMeses + reuniao.UmAno + reuniao.DezoitoMeses + reuniao.MultiplosAnos }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Relatório Detalhado -->
+  <div *ngIf="relatorioDetalhado" class="relatorio-container">
+    <div class="relatorio-header">
+      <h2>Relatório Detalhado de Sétima e Despesas</h2>
+      <p><strong>Grupo:</strong> {{ relatorioDetalhado.grupo }}</p>
+      <p><strong>Período:</strong> {{ getNomeMes(relatorioDetalhado.mes) }} de {{ relatorioDetalhado.ano }}</p>
+    </div>
+
+    <div class="totais-box">
+      <h3>Totais do Mês</h3>
+      <div class="totais-grid">
+        <div class="total-item">
+          <label>Total Sétima (Dinheiro)</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioDetalhado.totais.TotalSetimaMes) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total Sétima (PIX)</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioDetalhado.totais.TotalSetimaPixMes) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total Sétima Geral</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioDetalhado.totais.TotalSetimaGeral) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total Despesas</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioDetalhado.totais.TotalDespesasMes) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Saldo do Mês</label>
+          <span class="valor destaque">R$ {{ formatCurrency(relatorioDetalhado.totais.SaldoMes) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reunioes-detalhadas">
+      <h3>Detalhamento por Reunião</h3>
+      <div *ngFor="let item of relatorioDetalhado.reunioes" class="reuniao-detalhe">
+        <div class="reuniao-header">
+          <h4>Reunião de {{ formatDate(item.reuniao.Data) }}</h4>
+          <div class="reuniao-totais">
+            <span><strong>Sétima:</strong> R$ {{ formatCurrency(item.totalSetima) }}</span>
+            <span><strong>Despesas:</strong> R$ {{ formatCurrency(item.totalDespesas) }}</span>
+            <span><strong>Saldo:</strong> R$ {{ formatCurrency(item.saldo) }}</span>
+          </div>
+        </div>
+
+        <div class="despesas-list" *ngIf="item.despesas.length > 0">
+          <h5>Despesas desta reunião:</h5>
+          <table>
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let despesa of item.despesas">
+                <td>{{ despesa.Descricao }}</td>
+                <td>R$ {{ formatCurrency(despesa.ValorDespesa) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p *ngIf="item.despesas.length === 0" style="color: #666; font-style: italic;">Nenhuma despesa cadastrada</p>
+      </div>
+    </div>
+  </div>
+</div>

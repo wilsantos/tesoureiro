@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // Altere esta URL para o domínio de produção quando fizer o deploy
-const API_URL = 'http://localhost/tesoureiro/api'; // Para desenvolvimento local
-//const API_URL = 'https://williamsantos82.free.nf/api';
+//const API_URL = 'http://localhost/tesoureiro/api'; // Para desenvolvimento local
+const API_URL = 'https://williamsantos82.free.nf/api';
 
 // Se tiver problemas com 301 (redirecionamento), use index.php explicitamente:
 // Exemplo: `${API_URL}/grupo/index.php`
@@ -101,5 +101,10 @@ export class ApiService {
 
   deleteDespesa(id: number): Observable<any> {
     return this.http.delete(`${API_URL}/despesas/?id=${id}`);
+  }
+
+  // Métodos para Relatórios
+  getRelatorio(tipo: string, idGrupo: number, mes: number, ano: number): Observable<any> {
+    return this.http.get(`${API_URL}/relatorios/?tipo=${tipo}&IdGrupo=${idGrupo}&mes=${mes}&ano=${ano}`);
   }
 }

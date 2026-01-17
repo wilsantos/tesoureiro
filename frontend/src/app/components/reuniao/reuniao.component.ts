@@ -52,14 +52,28 @@ export class ReuniaoComponent implements OnInit {
 
   constructor(private apiService: ApiService) {}
 
+  grupoSelecionado: boolean = false;
+
   ngOnInit() {
-    // Carregar grupos sempre, mas não carregar reuniões até os 3 filtros serem preenchidos
+    // Carregar grupos sempre
     this.reunioes = [];
     this.loadGrupos();
   }
 
+  selecionarGrupo() {
+    // Quando grupo é selecionado, verificar se pode carregar reuniões
+    if (this.filtroGrupo) {
+      this.grupoSelecionado = true;
+      this.verificarFiltros();
+    } else {
+      this.grupoSelecionado = false;
+      this.reunioes = [];
+      this.filtrosPreenchidos = false;
+    }
+  }
+
   verificarFiltros() {
-    // Verifica se os 3 filtros estão preenchidos
+    // Verifica se grupo está selecionado e mês/ano estão preenchidos
     const todosPreenchidos = this.filtroMes !== null && this.filtroAno !== null && this.filtroGrupo !== null;
     
     if (todosPreenchidos) {
@@ -145,6 +159,10 @@ export class ReuniaoComponent implements OnInit {
   }
 
   onFiltroChange() {
+    // Se mudou o grupo, atualizar flag
+    if (this.filtroGrupo !== null) {
+      this.grupoSelecionado = true;
+    }
     this.verificarFiltros();
   }
 
@@ -181,9 +199,10 @@ export class ReuniaoComponent implements OnInit {
       this.isEdit = true;
       this.loadDespesas(this.reuniao.Id);
     } else {
+      // Nova reunião - grupo já vem preenchido do filtro
       this.reuniao = {
         Id: null,
-        IdGrupo: null,
+        IdGrupo: this.filtroGrupo, // Grupo já vem preenchido
         Data: new Date().toISOString().split('T')[0],
         Membros: 0,
         Visitantes: 0,
@@ -394,8 +413,14 @@ export class ReuniaoComponent implements OnInit {
   }
 
   getGrupoNome(idGrupo: number): string {
+    if (!idGrupo) return 'N/A';
     const grupo = this.grupos.find(g => g.Id === idGrupo);
     return grupo ? grupo.Nome : 'N/A';
+  }
+
+  getGrupoNomeSelecionado(): string {
+    if (!this.filtroGrupo) return '';
+    return this.getGrupoNome(this.filtroGrupo);
   }
 
   formatDate(date: string): string {
