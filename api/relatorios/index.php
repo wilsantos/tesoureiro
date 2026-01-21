@@ -30,7 +30,120 @@ try {
 
 switch ($method) {
     case 'GET':
-        // Validar parâmetros obrigatórios
+        // Verificar se é o endpoint de saldo acumulado (não precisa de mes/ano)
+        if (isset($_GET['tipo']) && $_GET['tipo'] === 'saldo-acumulado') {
+            if (!isset($_GET['IdGrupo']) || !isset($_GET['mes']) || !isset($_GET['ano'])) {
+                http_response_code(400);
+                echo json_encode(['message' => 'Parâmetros obrigatórios: IdGrupo, mes, ano'], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            
+            $idGrupo = $_GET['IdGrupo'];
+            $mes = $_GET['mes'];
+            $ano = $_GET['ano'];
+            
+            try {
+                // Buscar dados do grupo (Saldo inicial e DataSaldo)
+                $stmtGrupo = $conn->prepare("SELECT Saldo, DataSaldo FROM grupo WHERE Id = ?");
+                $stmtGrupo->execute([$idGrupo]);
+                $grupo = $stmtGrupo->fetch();
+                
+                if (!$grupo) {
+                    http_response_code(404);
+                    echo json_encode(['message' => 'Grupo não encontrado'], JSON_UNESCAPED_UNICODE);
+                    break;
+                }
+                
+                $saldoInicial = floatval($grupo['Saldo']);
+                $dataSaldoInicial = $grupo['DataSaldo'] ? $grupo['DataSaldo'] : null;
+                
+                // Se não houver DataSaldo, usar a primeira data de reunião ou data atual
+                if (!$dataSaldoInicial) {
+                    $stmtPrimeiraReuniao = $conn->prepare("SELECT MIN(Data) as PrimeiraData FROM reuniao WHERE IdGrupo = ?");
+                    $stmtPrimeiraReuniao->execute([$idGrupo]);
+                    $primeiraReuniao = $stmtPrimeiraReuniao->fetch();
+                    $dataSaldoInicial = $primeiraReuniao['PrimeiraData'] ? $primeiraReuniao['PrimeiraData'] : date('Y-m-d');
+                }
+                
+                // Calcular data final do relatório (último dia do mês)
+                $dataFinal = date('Y-m-t', strtotime("$ano-$mes-01"));
+                
+                // Buscar todas as reuniões desde a data inicial até a data final, ordenadas por data
+                $stmtReunioes = $conn->prepare("
+                    SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix
+                    FROM reuniao r
+                    WHERE r.IdGrupo = ? AND r.Data >= ? AND r.Data <= ?
+                    ORDER BY r.Data ASC
+                ");
+                $stmtReunioes->execute([$idGrupo, $dataSaldoInicial, $dataFinal]);
+                $reunioes = $stmtReunioes->fetchAll();
+                
+                // Buscar todas as despesas das reuniões no período
+                $despesasPorReuniao = [];
+                foreach ($reunioes as $reuniao) {
+                    $stmtDespesas = $conn->prepare("
+                        SELECT SUM(ValorDespesa) as TotalDespesas
+                        FROM despesas
+                        WHERE IdReuniao = ?
+                    ");
+                    $stmtDespesas->execute([$reuniao['Id']]);
+                    $despesa = $stmtDespesas->fetch();
+                    $despesasPorReuniao[$reuniao['Id']] = floatval($despesa['TotalDespesas'] ?? 0);
+                }
+                
+                // Calcular saldo acumulado dia a dia
+                $saldoAcumulado = $saldoInicial;
+                $saldoPorData = [];
+                
+                // Adicionar saldo inicial se a data for anterior ou igual à data final
+                if ($dataSaldoInicial <= $dataFinal) {
+                    $saldoPorData[] = [
+                        'data' => $dataSaldoInicial,
+                        'saldo' => $saldoAcumulado,
+                        'tipo' => 'saldo_inicial'
+                    ];
+                }
+                
+                // Processar cada reunião e acumular o saldo
+                foreach ($reunioes as $reuniao) {
+                    $setimaDinheiro = floatval($reuniao['ValorSetima']);
+                    $setimaPix = floatval($reuniao['ValorSetimaPix']);
+                    $totalSetima = $setimaDinheiro + $setimaPix;
+                    $totalDespesas = $despesasPorReuniao[$reuniao['Id']] ?? 0;
+                    $saldoDia = $totalSetima - $totalDespesas;
+                    
+                    $saldoAcumulado += $saldoDia;
+                    
+                    $saldoPorData[] = [
+                        'data' => $reuniao['Data'],
+                        'saldo' => $saldoAcumulado,
+                        'setimaDinheiro' => $setimaDinheiro,
+                        'setimaPix' => $setimaPix,
+                        'setima' => $totalSetima,
+                        'despesas' => $totalDespesas,
+                        'saldo_dia' => $saldoDia,
+                        'tipo' => 'transacao'
+                    ];
+                }
+                
+                echo json_encode([
+                    'grupoId' => $idGrupo,
+                    'dataInicial' => $dataSaldoInicial,
+                    'dataFinal' => $dataFinal,
+                    'saldoInicial' => $saldoInicial,
+                    'saldoFinal' => $saldoAcumulado,
+                    'saldoPorData' => $saldoPorData
+                ], JSON_UNESCAPED_UNICODE);
+                
+            } catch (PDOException $e) {
+                http_response_code(500);
+                error_log("Saldo Acumulado GET PDO Error: " . $e->getMessage());
+                echo json_encode(['message' => 'Erro ao calcular saldo acumulado', 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+            }
+            break;
+        }
+        
+        // Validar parâmetros obrigatórios para outros tipos de relatório
         if (!isset($_GET['tipo']) || !isset($_GET['IdGrupo']) || !isset($_GET['mes']) || !isset($_GET['ano'])) {
             http_response_code(400);
             echo json_encode(['message' => 'Parâmetros obrigatórios: tipo, IdGrupo, mes, ano'], JSON_UNESCAPED_UNICODE);

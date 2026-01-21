@@ -107,4 +107,9 @@ export class ApiService {
   getRelatorio(tipo: string, idGrupo: number, mes: number, ano: number): Observable<any> {
     return this.http.get(`${API_URL}/relatorios/?tipo=${tipo}&IdGrupo=${idGrupo}&mes=${mes}&ano=${ano}`);
   }
+
+  // Método para obter saldo acumulado
+  getSaldoAcumulado(idGrupo: number, mes: number, ano: number): Observable<any> {
+    return this.http.get(`${API_URL}/relatorios/?tipo=saldo-acumulado&IdGrupo=${idGrupo}&mes=${mes}&ano=${ano}`);
+  }
 }

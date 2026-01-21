@@ -47,7 +47,10 @@
                   "maximumError": "4kb"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "allowedCommonJsDependencies": [
+                "html-docx-js-typescript"
+              ]
             },
             "development": {
               "optimization": false,
