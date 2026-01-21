@@ -53,6 +53,7 @@ export class ReuniaoComponent implements OnInit {
   constructor(private apiService: ApiService) {}
 
   grupoSelecionado: boolean = false;
+  nomeGrupoSelecionado: string = '';
 
   ngOnInit() {
     // Carregar grupos sempre
@@ -62,8 +63,10 @@ export class ReuniaoComponent implements OnInit {
 
   selecionarGrupo() {
     // Quando grupo é selecionado, verificar se pode carregar reuniões
+    //debugger;
     if (this.filtroGrupo) {
       this.grupoSelecionado = true;
+      this.nomeGrupoSelecionado = this.getGrupoNome(this.filtroGrupo);
       this.verificarFiltros();
     } else {
       this.grupoSelecionado = false;
@@ -412,15 +415,17 @@ export class ReuniaoComponent implements OnInit {
     }
   }
 
-  getGrupoNome(idGrupo: number): string {
+  getGrupoNome(idGrupo: number): string { 
     if (!idGrupo) return 'N/A';
-    const grupo = this.grupos.find(g => g.Id === idGrupo);
+    const grupo = this.grupos.find(g => g.Id == idGrupo);
     return grupo ? grupo.Nome : 'N/A';
   }
 
   getGrupoNomeSelecionado(): string {
-    if (!this.filtroGrupo) return '';
-    return this.getGrupoNome(this.filtroGrupo);
+    //alert(this.nomeGrupoSelecionado);
+    return this.nomeGrupoSelecionado;
+   // if (!this.filtroGrupo) return '';
+    //return this.getGrupoNome(this.filtroGrupo);
   }
 
   formatDate(date: string): string {

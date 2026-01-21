@@ -15,7 +15,7 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES latin1 */;
 
 --
 -- Banco de dados: `tesouraria`
@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `csa` (
   `Id` int(11) NOT NULL,
   `Nome` varchar(400) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Despejando dados para a tabela `csa`
@@ -52,7 +52,7 @@ CREATE TABLE `despesas` (
   `Descricao` varchar(400) NOT NULL,
   `ValorDespesa` decimal(10,0) NOT NULL,
   `Comprovante` mediumblob NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
