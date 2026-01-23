@@ -54,7 +54,7 @@ switch ($method) {
                     break;
                 }
                 
-                $saldoInicial = floatval($grupo['Saldo']);
+                $saldoInicialGrupo = floatval($grupo['Saldo']);
                 $dataSaldoInicial = $grupo['DataSaldo'] ? $grupo['DataSaldo'] : null;
                 
                 // Se não houver DataSaldo, usar a primeira data de reunião ou data atual
@@ -65,20 +65,54 @@ switch ($method) {
                     $dataSaldoInicial = $primeiraReuniao['PrimeiraData'] ? $primeiraReuniao['PrimeiraData'] : date('Y-m-d');
                 }
                 
-                // Calcular data final do relatório (último dia do mês)
-                $dataFinal = date('Y-m-t', strtotime("$ano-$mes-01"));
+                // Calcular datas do mês selecionado
+                $dataInicioMes = date('Y-m-01', strtotime("$ano-$mes-01"));
+                $dataFinalMes = date('Y-m-t', strtotime("$ano-$mes-01"));
                 
-                // Buscar todas as reuniões desde a data inicial até a data final, ordenadas por data
+                // Calcular saldo acumulado até o último dia do mês anterior
+                // Primeiro, buscar todas as reuniões desde DataSaldo até o último dia do mês anterior
+                $dataFimMesAnterior = date('Y-m-t', strtotime("$ano-$mes-01 -1 month"));
+                
+                // Inicializar com o saldo inicial do grupo
+                $saldoAcumuladoAteMesAnterior = $saldoInicialGrupo;
+                
+                // Se houver reuniões anteriores ao mês selecionado, calcular o saldo acumulado
+                if ($dataSaldoInicial <= $dataFimMesAnterior) {
+                    $stmtReunioesAnteriores = $conn->prepare("
+                        SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix
+                        FROM reuniao r
+                        WHERE r.IdGrupo = ? AND r.Data >= ? AND r.Data <= ?
+                        ORDER BY r.Data ASC
+                    ");
+                    $stmtReunioesAnteriores->execute([$idGrupo, $dataSaldoInicial, $dataFimMesAnterior]);
+                    $reunioesAnteriores = $stmtReunioesAnteriores->fetchAll();
+                    
+                    // Calcular saldo acumulado até o fim do mês anterior
+                    foreach ($reunioesAnteriores as $reuniaoAnt) {
+                        $stmtDespesasAnt = $conn->prepare("
+                            SELECT SUM(ValorDespesa) as TotalDespesas
+                            FROM despesas
+                            WHERE IdReuniao = ?
+                        ");
+                        $stmtDespesasAnt->execute([$reuniaoAnt['Id']]);
+                        $despesaAnt = $stmtDespesasAnt->fetch();
+                        $totalDespesasAnt = floatval($despesaAnt['TotalDespesas'] ?? 0);
+                        $totalSetimaAnt = floatval($reuniaoAnt['ValorSetima']) + floatval($reuniaoAnt['ValorSetimaPix']);
+                        $saldoAcumuladoAteMesAnterior += ($totalSetimaAnt - $totalDespesasAnt);
+                    }
+                }
+                
+                // Buscar apenas as reuniões do mês selecionado
                 $stmtReunioes = $conn->prepare("
                     SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix
                     FROM reuniao r
                     WHERE r.IdGrupo = ? AND r.Data >= ? AND r.Data <= ?
                     ORDER BY r.Data ASC
                 ");
-                $stmtReunioes->execute([$idGrupo, $dataSaldoInicial, $dataFinal]);
+                $stmtReunioes->execute([$idGrupo, $dataInicioMes, $dataFinalMes]);
                 $reunioes = $stmtReunioes->fetchAll();
                 
-                // Buscar todas as despesas das reuniões no período
+                // Buscar despesas das reuniões do mês
                 $despesasPorReuniao = [];
                 foreach ($reunioes as $reuniao) {
                     $stmtDespesas = $conn->prepare("
@@ -91,20 +125,18 @@ switch ($method) {
                     $despesasPorReuniao[$reuniao['Id']] = floatval($despesa['TotalDespesas'] ?? 0);
                 }
                 
-                // Calcular saldo acumulado dia a dia
-                $saldoAcumulado = $saldoInicial;
+                // Calcular saldo acumulado apenas para o mês selecionado
+                $saldoAcumulado = $saldoAcumuladoAteMesAnterior;
                 $saldoPorData = [];
                 
-                // Adicionar saldo inicial se a data for anterior ou igual à data final
-                if ($dataSaldoInicial <= $dataFinal) {
-                    $saldoPorData[] = [
-                        'data' => $dataSaldoInicial,
-                        'saldo' => $saldoAcumulado,
-                        'tipo' => 'saldo_inicial'
-                    ];
-                }
+                // Adicionar saldo inicial do mês (saldo acumulado até o fim do mês anterior)
+                $saldoPorData[] = [
+                    'data' => $dataInicioMes,
+                    'saldo' => $saldoAcumulado,
+                    'tipo' => 'saldo_inicial'
+                ];
                 
-                // Processar cada reunião e acumular o saldo
+                // Processar cada reunião do mês e acumular o saldo
                 foreach ($reunioes as $reuniao) {
                     $setimaDinheiro = floatval($reuniao['ValorSetima']);
                     $setimaPix = floatval($reuniao['ValorSetimaPix']);
@@ -128,9 +160,9 @@ switch ($method) {
                 
                 echo json_encode([
                     'grupoId' => $idGrupo,
-                    'dataInicial' => $dataSaldoInicial,
-                    'dataFinal' => $dataFinal,
-                    'saldoInicial' => $saldoInicial,
+                    'dataInicial' => $dataInicioMes,
+                    'dataFinal' => $dataFinalMes,
+                    'saldoInicial' => $saldoAcumuladoAteMesAnterior,
                     'saldoFinal' => $saldoAcumulado,
                     'saldoPorData' => $saldoPorData
                 ], JSON_UNESCAPED_UNICODE);

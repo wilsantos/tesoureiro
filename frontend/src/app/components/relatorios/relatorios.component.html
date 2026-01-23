@@ -211,7 +211,11 @@
           <span class="valor destaque">R$ {{ formatCurrency(relatorioDetalhado.totais.SaldoMes) }}</span>
         </div>
         <div class="total-item" *ngIf="saldoAcumulado">
-          <label>Saldo Final</label>
+          <label>Saldo Inicial do Mês</label>
+          <span class="valor">R$ {{ formatCurrency(saldoAcumulado.saldoInicial) }}</span>
+        </div>
+        <div class="total-item" *ngIf="saldoAcumulado">
+          <label>Saldo Final do Mês</label>
           <span class="valor destaque">R$ {{ formatCurrency(saldoAcumulado.saldoFinal) }}</span>
         </div>
       </div>
@@ -219,7 +223,7 @@
 
     <!-- Tabela de Saldo Acumulado -->
     <div *ngIf="saldoAcumulado" class="saldo-acumulado-box" style="margin-top: 30px; margin-bottom: 30px;">
-      <h3>Saldo Acumulado (desde {{ formatDate(saldoAcumulado.dataInicial) }} até {{ formatDate(saldoAcumulado.dataFinal) }})</h3>
+      <h3>Saldo Acumulado - {{ getNomeMes(relatorioDetalhado.mes) }} de {{ relatorioDetalhado.ano }}</h3>
       <table>
         <thead>
           <tr>
@@ -235,6 +239,7 @@
           <tr *ngFor="let item of saldoAcumulado.saldoPorData; let i = index" [style.background-color]="item.tipo === 'saldo_inicial' ? '#e8f5e9' : ''">
             <td>
               {{ formatDate(item.data) }}
+              <span *ngIf="item.tipo === 'saldo_inicial'" style="color: #28a745; font-weight: bold; margin-left: 10px;">(Saldo Anterior)</span>
             </td>
             <td>
               <span *ngIf="item.setimaDinheiro !== undefined">R$ {{ formatCurrency(item.setimaDinheiro) }}</span>
@@ -245,8 +250,8 @@
               <span *ngIf="item.setimaPix === undefined">-</span>
             </td>
             <td>
-              <span *ngIf="item.setimaPix !== undefined">R$ {{ formatCurrency(item.setima) }}</span>
-              <span *ngIf="item.setimaPix === undefined">-</span>
+              <span *ngIf="item.setima !== undefined">R$ {{ formatCurrency(item.setima) }}</span>
+              <span *ngIf="item.setima === undefined">-</span>
             </td>
             <td>
               <span *ngIf="item.despesas !== undefined">R$ {{ formatCurrency(item.despesas) }}</span>
@@ -254,7 +259,6 @@
             </td>
             <td [style.color]="item.saldo >= 0 ? '#28a745' : '#dc3545'" style="font-weight: bold;">
               R$ {{ formatCurrency(item.saldo) }}
-              <!--<span *ngIf="item.tipo === 'saldo_inicial'" style="color: #28a745; font-weight: bold; margin-left: 10px;">(Saldo Anterior)</span>-->
             </td>
           </tr>
         </tbody>
