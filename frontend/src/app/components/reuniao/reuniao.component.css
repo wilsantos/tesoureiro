@@ -1,5 +1,10 @@
 /* Estilos específicos do componente de reuniões */
 
+/* Remover width dos checkboxes */
+input[type="checkbox"] {
+  width: auto !important;
+}
+
 /* Seção Novos Membros - 3 campos por linha em desktop */
 .form-row-duas-colunas {
   display: grid;
@@ -149,6 +154,11 @@
   .form-row-duas-colunas {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
+  }
+
+  /* Checkboxes de despesa - um embaixo do outro no mobile */
+  .form-row-checkboxes {
+    grid-template-columns: 1fr !important;
   }
 
   .form-container {

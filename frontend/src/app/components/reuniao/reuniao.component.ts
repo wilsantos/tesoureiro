@@ -22,6 +22,7 @@ export class ReuniaoComponent implements OnInit {
     Visitantes: 0,
     ValorSetima: 0,
     ValorSetimaPix: 0,
+    VendaLiteratura: 0,
     Ingresso: 0,
     TrintaDias: 0,
     SessentaDias: 0,
@@ -39,6 +40,8 @@ export class ReuniaoComponent implements OnInit {
     IdReuniao: null,
     Descricao: '',
     ValorDespesa: 0,
+    repasse: false,
+    compra_literatura: false,
     Comprovante: null
   };
   showModal: boolean = false;
@@ -211,6 +214,7 @@ export class ReuniaoComponent implements OnInit {
         Visitantes: 0,
         ValorSetima: 0,
         ValorSetimaPix: 0,
+        VendaLiteratura: 0,
         Ingresso: 0,
         TrintaDias: 0,
         SessentaDias: 0,
@@ -238,6 +242,7 @@ export class ReuniaoComponent implements OnInit {
       Visitantes: 0,
       ValorSetima: 0,
       ValorSetimaPix: 0,
+      VendaLiteratura: 0,
       Ingresso: 0,
       TrintaDias: 0,
       SessentaDias: 0,
@@ -265,7 +270,11 @@ export class ReuniaoComponent implements OnInit {
 
   openDespesaModal(editDespesa?: any) {
     if (editDespesa) {
-      this.despesa = { ...editDespesa };
+      this.despesa = { 
+        ...editDespesa,
+        repasse: editDespesa.repasse || false,
+        compra_literatura: editDespesa.compra_literatura || false
+      };
       this.isEditDespesa = true;
     } else {
       this.despesa = {
@@ -273,6 +282,8 @@ export class ReuniaoComponent implements OnInit {
         IdReuniao: this.reuniao.Id,
         Descricao: '',
         ValorDespesa: 0,
+        repasse: false,
+        compra_literatura: false,
         Comprovante: null
       };
       this.isEditDespesa = false;
@@ -287,6 +298,8 @@ export class ReuniaoComponent implements OnInit {
       IdReuniao: null,
       Descricao: '',
       ValorDespesa: 0,
+      repasse: false,
+      compra_literatura: false,
       Comprovante: null
     };
   }
@@ -367,6 +380,7 @@ export class ReuniaoComponent implements OnInit {
       ...this.reuniao,
       ValorSetima: parseFloat(this.reuniao.ValorSetima) || 0,
       ValorSetimaPix: parseFloat(this.reuniao.ValorSetimaPix) || 0,
+      VendaLiteratura: parseFloat(this.reuniao.VendaLiteratura) || 0,
       FatosRelevantes: this.reuniao.FatosRelevantes || ''
     };
 

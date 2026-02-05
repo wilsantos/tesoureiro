@@ -113,13 +113,13 @@ switch ($method) {
 
         try {
             $stmt = $conn->prepare("INSERT INTO reuniao (IdGrupo, Data, Membros, Visitantes, ValorSetima, ValorSetimaPix, 
-                                  Ingresso, TrintaDias, SessentaDias, NoventaDias, SeisMeses, 
+                                  VendaLiteratura, Ingresso, TrintaDias, SessentaDias, NoventaDias, SeisMeses, 
                                   NoveMeses, UmAno, DezoitoMeses, MultiplosAnos, FatosRelevantes) 
-                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             if ($stmt->execute([
                 $data['IdGrupo'], $data['Data'], $data['Membros'], $data['Visitantes'],
-                $data['ValorSetima'], $data['ValorSetimaPix'], $data['Ingresso'],
+                $data['ValorSetima'], $data['ValorSetimaPix'], $data['VendaLiteratura'] ?? 0, $data['Ingresso'],
                 $data['TrintaDias'], $data['SessentaDias'], $data['NoventaDias'], $data['SeisMeses'],
                 $data['NoveMeses'], $data['UmAno'], $data['DezoitoMeses'], $data['MultiplosAnos'], $data['FatosRelevantes']
             ])) {
@@ -161,14 +161,14 @@ switch ($method) {
         }
 
         $stmt = $conn->prepare("UPDATE reuniao SET IdGrupo = ?, Data = ?, Membros = ?, Visitantes = ?, 
-                              ValorSetima = ?, ValorSetimaPix = ?, Ingresso = ?, 
+                              ValorSetima = ?, ValorSetimaPix = ?, VendaLiteratura = ?, Ingresso = ?, 
                               TrintaDias = ?, SessentaDias = ?, NoventaDias = ?, SeisMeses = ?, 
                               NoveMeses = ?, UmAno = ?, DezoitoMeses = ?, MultiplosAnos = ?, FatosRelevantes = ? 
                               WHERE Id = ?");
         
         if ($stmt->execute([
             $data['IdGrupo'], $data['Data'], $data['Membros'], $data['Visitantes'],
-            $data['ValorSetima'], $data['ValorSetimaPix'], $data['Ingresso'],
+            $data['ValorSetima'], $data['ValorSetimaPix'], $data['VendaLiteratura'] ?? 0, $data['Ingresso'],
             $data['TrintaDias'], $data['SessentaDias'], $data['NoventaDias'], $data['SeisMeses'],
             $data['NoveMeses'], $data['UmAno'], $data['DezoitoMeses'], $data['MultiplosAnos'], $data['FatosRelevantes'], $data['Id']
         ])) {

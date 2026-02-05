@@ -33,7 +33,7 @@ switch ($method) {
         if (isset($_GET['id'])) {
             // Buscar despesa específica
             $id = $_GET['id'];
-            $stmt = $conn->prepare("SELECT Id, IdReuniao, Descricao, ValorDespesa, 
+            $stmt = $conn->prepare("SELECT Id, IdReuniao, Descricao, ValorDespesa, repasse, compra_literatura, 
                                    HEX(Comprovante) as ComprovanteHex FROM despesas WHERE Id = ?");
             $stmt->execute([$id]);
             $despesa = $stmt->fetch();
@@ -44,6 +44,9 @@ switch ($method) {
                     $despesa['Comprovante'] = base64_encode(hex2bin($despesa['ComprovanteHex']));
                 }
                 unset($despesa['ComprovanteHex']);
+                // Converter valores booleanos do banco (0/1) para true/false
+                $despesa['repasse'] = (bool)$despesa['repasse'];
+                $despesa['compra_literatura'] = (bool)$despesa['compra_literatura'];
                 echo json_encode($despesa, JSON_UNESCAPED_UNICODE);
             } else {
                 http_response_code(404);
@@ -52,14 +55,24 @@ switch ($method) {
         } else if (isset($_GET['IdReuniao'])) {
             // Listar despesas de uma reunião específica
             $idReuniao = $_GET['IdReuniao'];
-            $stmt = $conn->prepare("SELECT Id, IdReuniao, Descricao, ValorDespesa FROM despesas WHERE IdReuniao = ? ORDER BY Id");
+            $stmt = $conn->prepare("SELECT Id, IdReuniao, Descricao, ValorDespesa, repasse, compra_literatura FROM despesas WHERE IdReuniao = ? ORDER BY Id");
             $stmt->execute([$idReuniao]);
             $despesas = $stmt->fetchAll();
+            // Converter valores booleanos do banco (0/1) para true/false
+            foreach ($despesas as &$despesa) {
+                $despesa['repasse'] = (bool)$despesa['repasse'];
+                $despesa['compra_literatura'] = (bool)$despesa['compra_literatura'];
+            }
             echo json_encode($despesas, JSON_UNESCAPED_UNICODE);
         } else {
             // Listar todas as despesas (sem comprovante para não sobrecarregar)
-            $stmt = $conn->query("SELECT Id, IdReuniao, Descricao, ValorDespesa FROM despesas ORDER BY Id DESC");
+            $stmt = $conn->query("SELECT Id, IdReuniao, Descricao, ValorDespesa, repasse, compra_literatura FROM despesas ORDER BY Id DESC");
             $despesas = $stmt->fetchAll();
+            // Converter valores booleanos do banco (0/1) para true/false
+            foreach ($despesas as &$despesa) {
+                $despesa['repasse'] = (bool)$despesa['repasse'];
+                $despesa['compra_literatura'] = (bool)$despesa['compra_literatura'];
+            }
             echo json_encode($despesas, JSON_UNESCAPED_UNICODE);
         }
         break;
@@ -90,9 +103,12 @@ switch ($method) {
                 }
             }
             
-            $stmt = $conn->prepare("INSERT INTO despesas (IdReuniao, Descricao, ValorDespesa, Comprovante) VALUES (?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO despesas (IdReuniao, Descricao, ValorDespesa, repasse, compra_literatura, Comprovante) VALUES (?, ?, ?, ?, ?, ?)");
             
-            if ($stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $comprovante])) {
+            $repasse = isset($data['repasse']) ? ($data['repasse'] ? 1 : 0) : 0;
+            $compra_literatura = isset($data['compra_literatura']) ? ($data['compra_literatura'] ? 1 : 0) : 0;
+            
+            if ($stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $repasse, $compra_literatura, $comprovante])) {
                 $id = $conn->lastInsertId();
                 http_response_code(201);
                 echo json_encode(['message' => 'Despesa criada com sucesso', 'id' => $id], JSON_UNESCAPED_UNICODE);
@@ -122,17 +138,20 @@ switch ($method) {
         }
 
         try {
+            $repasse = isset($data['repasse']) ? ($data['repasse'] ? 1 : 0) : 0;
+            $compra_literatura = isset($data['compra_literatura']) ? ($data['compra_literatura'] ? 1 : 0) : 0;
+            
             // Se comprovante foi enviado, atualizar também
             if (isset($data['Comprovante']) && !empty($data['Comprovante'])) {
                 $comprovante = base64_decode($data['Comprovante']);
                 if ($comprovante === false) {
                     throw new Exception('Comprovante inválido (deve ser base64)');
                 }
-                $stmt = $conn->prepare("UPDATE despesas SET IdReuniao = ?, Descricao = ?, ValorDespesa = ?, Comprovante = ? WHERE Id = ?");
-                $result = $stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $comprovante, $data['Id']]);
+                $stmt = $conn->prepare("UPDATE despesas SET IdReuniao = ?, Descricao = ?, ValorDespesa = ?, repasse = ?, compra_literatura = ?, Comprovante = ? WHERE Id = ?");
+                $result = $stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $repasse, $compra_literatura, $comprovante, $data['Id']]);
             } else {
-                $stmt = $conn->prepare("UPDATE despesas SET IdReuniao = ?, Descricao = ?, ValorDespesa = ? WHERE Id = ?");
-                $result = $stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $data['Id']]);
+                $stmt = $conn->prepare("UPDATE despesas SET IdReuniao = ?, Descricao = ?, ValorDespesa = ?, repasse = ?, compra_literatura = ? WHERE Id = ?");
+                $result = $stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $repasse, $compra_literatura, $data['Id']]);
             }
             
             if ($result) {

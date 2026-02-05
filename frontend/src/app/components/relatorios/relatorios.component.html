@@ -66,7 +66,7 @@
     </div>
 
     <div class="totais-box">
-      <h3>Totais do Mês</h3>
+      <h3>Presenças</h3>
       <div class="totais-grid">
         <div class="total-item">
           <label>Total de Reuniões</label>
@@ -80,6 +80,12 @@
           <label>Total de Visitantes</label>
           <span class="valor">{{ relatorioGeral.totais.TotalVisitantes }}</span>
         </div>
+    </div>
+    </div>
+
+    <div class="totais-box">
+      <h3>Valores</h3>
+      <div class="totais-grid">
         <div class="total-item">
           <label>Total Sétima</label>
           <span class="valor destaque">R$ {{ formatCurrency(relatorioGeral.totais.TotalSetimaMes + relatorioGeral.totais.TotalSetimaPixMes) }}</span>
@@ -88,11 +94,20 @@
           <label>Total de Despesas</label>
           <span class="valor">R$ {{ formatCurrency(relatorioGeral.totais.TotalDespesasMes) }}</span>
         </div>
+        <div class="total-item">
+          <label>Repasse</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioGeral.totais.TotalRepasseMes) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Compra de Literatura</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioGeral.totais.TotalCompraLiteraturaMes) }}</span>
+        </div>
       </div>
     </div>
 
+
     <div class="totais-box" style="margin-top: 30px;">
-      <h3>Totais de Trocas de Fichas</h3>
+      <h3>Trocas de Fichas</h3>
       <div class="totais-grid">
         <div class="total-item">
           <label>Ingressos</label>

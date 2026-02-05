@@ -228,7 +228,26 @@ switch ($method) {
                     WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ?
                 ");
                 $stmtDespesas->execute([$idGrupo, $mes, $ano]);
+
+                $stmtRepasse = $conn->prepare("
+                    SELECT COALESCE(SUM(d.ValorDespesa), 0) as TotalRepasseMes
+                    FROM despesas d
+                    INNER JOIN reuniao r ON d.IdReuniao = r.Id
+                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ? AND d.repasse = 1
+                ");
+                $stmtRepasse->execute([$idGrupo, $mes, $ano]);
+
+                $stmtCompraLiteratura = $conn->prepare("
+                    SELECT COALESCE(SUM(d.ValorDespesa), 0) as TotalCompraLiteraturaMes
+                    FROM despesas d
+                    INNER JOIN reuniao r ON d.IdReuniao = r.Id
+                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ? AND d.compra_literatura = 1
+                ");
+                $stmtCompraLiteratura->execute([$idGrupo, $mes, $ano]);
+
                 $totaisDespesas = $stmtDespesas->fetch();
+                $totaisRepasse = $stmtRepasse->fetch();
+                $totaisCompraLiteratura = $stmtCompraLiteratura->fetch();
 
                 $totais = [
                     'TotalReunioes' => intval($totaisReunioes['TotalReunioes'] ?? 0),
@@ -237,6 +256,8 @@ switch ($method) {
                     'TotalSetimaMes' => floatval($totaisReunioes['TotalSetimaMes'] ?? 0),
                     'TotalSetimaPixMes' => floatval($totaisReunioes['TotalSetimaPixMes'] ?? 0),
                     'TotalDespesasMes' => floatval($totaisDespesas['TotalDespesasMes'] ?? 0),
+                    'TotalRepasseMes' => floatval($totaisRepasse['TotalRepasseMes'] ?? 0),
+                    'TotalCompraLiteraturaMes' => floatval($totaisCompraLiteratura['TotalCompraLiteraturaMes'] ?? 0),
                     'TotalIngresso' => intval($totaisReunioes['TotalIngresso'] ?? 0),
                     'TotalTrintaDias' => intval($totaisReunioes['TotalTrintaDias'] ?? 0),
                     'TotalSessentaDias' => intval($totaisReunioes['TotalSessentaDias'] ?? 0),
