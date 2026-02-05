@@ -55,15 +55,20 @@ export class RelatoriosComponent implements OnInit {
     this.relatorioDetalhado = null;
     this.saldoAcumulado = null;
 //debugger;
-    // Buscar relatório e saldo acumulado em paralelo
+    // Buscar relatório
     this.apiService.getRelatorio(this.tipoRelatorio, this.filtroGrupo, this.filtroMes, this.filtroAno).subscribe({
       next: (data) => {
         if (this.tipoRelatorio === 'geral') {
           this.relatorioGeral = data;
+          this.relatorioDetalhado = null;
+          this.saldoAcumulado = null; // Garantir que saldo acumulado não aparece no relatório geral
+          this.carregando = false;
         } else {
           this.relatorioDetalhado = data;
+          this.relatorioGeral = null;
+          // Para relatório detalhado, buscar saldo acumulado também
+          this.buscarSaldoAcumulado();
         }
-        this.verificarCarregamentoCompleto();
       },
       error: (error) => {
         this.carregando = false;
@@ -71,8 +76,14 @@ export class RelatoriosComponent implements OnInit {
         alert('Erro ao gerar relatório: ' + (error.error?.message || error.message || 'Erro desconhecido'));
       }
     });
+  }
 
-    // Buscar saldo acumulado
+  private buscarSaldoAcumulado() {
+    // Buscar saldo acumulado apenas para relatório detalhado
+    // Os valores já foram validados em gerarRelatorio(), então não são null aqui
+    if (!this.filtroGrupo || !this.filtroMes || !this.filtroAno) {
+      return;
+    }
     this.apiService.getSaldoAcumulado(this.filtroGrupo, this.filtroMes, this.filtroAno).subscribe({
       next: (data) => {
         this.saldoAcumulado = data;
@@ -88,8 +99,8 @@ export class RelatoriosComponent implements OnInit {
   }
 
   private verificarCarregamentoCompleto() {
-    // Verifica se ambos os dados foram carregados (ou se pelo menos o relatório foi carregado)
-    if ((this.relatorioGeral || this.relatorioDetalhado)) {
+    // Verifica se ambos os dados foram carregados (relatório detalhado + saldo acumulado)
+    if (this.relatorioDetalhado) {
       this.carregando = false;
     }
   }
@@ -223,8 +234,9 @@ export class RelatoriosComponent implements OnInit {
       if (resultado instanceof Blob) {
         blob = resultado;
       } else {
-        // Se for Buffer, converter para Blob
-        blob = new Blob([resultado], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        // Se for Buffer ou ArrayBuffer, converter para Blob
+        const arrayBuffer = resultado instanceof ArrayBuffer ? resultado : new Uint8Array(resultado as any).buffer;
+        blob = new Blob([arrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       }
       
       // Criar nome do arquivo (remover caracteres especiais)

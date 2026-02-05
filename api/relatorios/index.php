@@ -189,60 +189,70 @@ switch ($method) {
 
         try {
             if ($tipo === 'geral') {
-                // Relatório Geral de Reuniões com Totais do Mês
-                $stmt = $conn->prepare("
+                // Relatório Geral de Reuniões - Apenas Totais do Mês
+                
+                // Buscar nome do grupo
+                $stmtGrupo = $conn->prepare("SELECT Nome FROM grupo WHERE Id = ?");
+                $stmtGrupo->execute([$idGrupo]);
+                $grupo = $stmtGrupo->fetch();
+                $nomeGrupo = $grupo['Nome'] ?? '';
+
+                // Calcular totais das reuniões
+                $stmtTotais = $conn->prepare("
                     SELECT 
-                        r.*,
-                        g.Nome as NomeGrupo,
                         COUNT(r.Id) as TotalReunioes,
                         SUM(r.Membros) as TotalMembros,
                         SUM(r.Visitantes) as TotalVisitantes,
-                        SUM(r.ValorSetima + r.ValorSetimaPix) as TotalSetimaMes,
-                        SUM(r.Ingresso + r.TrintaDias + r.SessentaDias + r.NoventaDias + 
-                            r.SeisMeses + r.NoveMeses + r.UmAno + r.DezoitoMeses + r.MultiplosAnos) as TotalNovosMembros
+                        SUM(r.ValorSetima) as TotalSetimaMes,
+                        SUM(r.ValorSetimaPix) as TotalSetimaPixMes,
+                        SUM(r.Ingresso) as TotalIngresso,
+                        SUM(r.TrintaDias) as TotalTrintaDias,
+                        SUM(r.SessentaDias) as TotalSessentaDias,
+                        SUM(r.NoventaDias) as TotalNoventaDias,
+                        SUM(r.SeisMeses) as TotalSeisMeses,
+                        SUM(r.NoveMeses) as TotalNoveMeses,
+                        SUM(r.UmAno) as TotalUmAno,
+                        SUM(r.DezoitoMeses) as TotalDezoitoMeses,
+                        SUM(r.MultiplosAnos) as TotalMultiplosAnos
                     FROM reuniao r
-                    INNER JOIN grupo g ON r.IdGrupo = g.Id
                     WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ?
-                    GROUP BY r.IdGrupo, MONTH(r.Data), YEAR(r.Data)
                 ");
-                $stmt->execute([$idGrupo, $mes, $ano]);
-                
-                // Buscar reuniões individuais
-                $stmtReunioes = $conn->prepare("
-                    SELECT r.*, g.Nome as NomeGrupo
-                    FROM reuniao r
-                    INNER JOIN grupo g ON r.IdGrupo = g.Id
-                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ?
-                    ORDER BY r.Data ASC
-                ");
-                $stmtReunioes->execute([$idGrupo, $mes, $ano]);
-                $reunioes = $stmtReunioes->fetchAll();
+                $stmtTotais->execute([$idGrupo, $mes, $ano]);
+                $totaisReunioes = $stmtTotais->fetch();
 
-                // Calcular totais
+                // Calcular total de despesas do período
+                $stmtDespesas = $conn->prepare("
+                    SELECT COALESCE(SUM(d.ValorDespesa), 0) as TotalDespesasMes
+                    FROM despesas d
+                    INNER JOIN reuniao r ON d.IdReuniao = r.Id
+                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ?
+                ");
+                $stmtDespesas->execute([$idGrupo, $mes, $ano]);
+                $totaisDespesas = $stmtDespesas->fetch();
+
                 $totais = [
-                    'TotalReunioes' => count($reunioes),
-                    'TotalMembros' => array_sum(array_column($reunioes, 'Membros')),
-                    'TotalVisitantes' => array_sum(array_column($reunioes, 'Visitantes')),
-                    'TotalSetimaMes' => 0,
-                    'TotalSetimaPixMes' => 0,
-                    'TotalNovosMembros' => 0
+                    'TotalReunioes' => intval($totaisReunioes['TotalReunioes'] ?? 0),
+                    'TotalMembros' => intval($totaisReunioes['TotalMembros'] ?? 0),
+                    'TotalVisitantes' => intval($totaisReunioes['TotalVisitantes'] ?? 0),
+                    'TotalSetimaMes' => floatval($totaisReunioes['TotalSetimaMes'] ?? 0),
+                    'TotalSetimaPixMes' => floatval($totaisReunioes['TotalSetimaPixMes'] ?? 0),
+                    'TotalDespesasMes' => floatval($totaisDespesas['TotalDespesasMes'] ?? 0),
+                    'TotalIngresso' => intval($totaisReunioes['TotalIngresso'] ?? 0),
+                    'TotalTrintaDias' => intval($totaisReunioes['TotalTrintaDias'] ?? 0),
+                    'TotalSessentaDias' => intval($totaisReunioes['TotalSessentaDias'] ?? 0),
+                    'TotalNoventaDias' => intval($totaisReunioes['TotalNoventaDias'] ?? 0),
+                    'TotalSeisMeses' => intval($totaisReunioes['TotalSeisMeses'] ?? 0),
+                    'TotalNoveMeses' => intval($totaisReunioes['TotalNoveMeses'] ?? 0),
+                    'TotalUmAno' => intval($totaisReunioes['TotalUmAno'] ?? 0),
+                    'TotalDezoitoMeses' => intval($totaisReunioes['TotalDezoitoMeses'] ?? 0),
+                    'TotalMultiplosAnos' => intval($totaisReunioes['TotalMultiplosAnos'] ?? 0)
                 ];
-
-                foreach ($reunioes as $r) {
-                    $totais['TotalSetimaMes'] += floatval($r['ValorSetima']);
-                    $totais['TotalSetimaPixMes'] += floatval($r['ValorSetimaPix']);
-                    $totais['TotalNovosMembros'] += intval($r['Ingresso']) + intval($r['TrintaDias']) + 
-                        intval($r['SessentaDias']) + intval($r['NoventaDias']) + intval($r['SeisMeses']) + 
-                        intval($r['NoveMeses']) + intval($r['UmAno']) + intval($r['DezoitoMeses']) + 
-                        intval($r['MultiplosAnos']);
-                }
 
                 echo json_encode([
                     'tipo' => 'geral',
-                    'grupo' => $reunioes[0]['NomeGrupo'] ?? '',
+                    'grupo' => $nomeGrupo,
                     'mes' => $mes,
                     'ano' => $ano,
-                    'reunioes' => $reunioes,
                     'totais' => $totais
                 ], JSON_UNESCAPED_UNICODE);
 

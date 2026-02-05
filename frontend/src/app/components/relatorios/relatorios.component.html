@@ -81,97 +81,56 @@
           <span class="valor">{{ relatorioGeral.totais.TotalVisitantes }}</span>
         </div>
         <div class="total-item">
-          <label>Total Sétima (Dinheiro)</label>
-          <span class="valor">R$ {{ formatCurrency(relatorioGeral.totais.TotalSetimaMes) }}</span>
-        </div>
-        <div class="total-item">
-          <label>Total Sétima (PIX)</label>
-          <span class="valor">R$ {{ formatCurrency(relatorioGeral.totais.TotalSetimaPixMes) }}</span>
-        </div>
-        <div class="total-item">
-          <label>Total Sétima Geral</label>
+          <label>Total Sétima</label>
           <span class="valor destaque">R$ {{ formatCurrency(relatorioGeral.totais.TotalSetimaMes + relatorioGeral.totais.TotalSetimaPixMes) }}</span>
         </div>
         <div class="total-item">
-          <label>Total Novos Membros</label>
-          <span class="valor">{{ relatorioGeral.totais.TotalNovosMembros }}</span>
+          <label>Total de Despesas</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioGeral.totais.TotalDespesasMes) }}</span>
         </div>
       </div>
     </div>
 
-    <!-- Saldo Acumulado -->
-    <div *ngIf="saldoAcumulado" class="saldo-acumulado-box" style="margin-top: 30px; margin-bottom: 30px;">
-      <h3>Saldo Acumulado (desde {{ formatDate(saldoAcumulado.dataInicial) }} até {{ formatDate(saldoAcumulado.dataFinal) }})</h3>
-      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
-        <p style="margin: 5px 0;"><strong>Saldo Inicial:</strong> R$ {{ formatCurrency(saldoAcumulado.saldoInicial) }}</p>
-        <p style="margin: 5px 0;"><strong>Saldo Final:</strong> R$ {{ formatCurrency(saldoAcumulado.saldoFinal) }}</p>
+    <div class="totais-box" style="margin-top: 30px;">
+      <h3>Totais de Trocas de Fichas</h3>
+      <div class="totais-grid">
+        <div class="total-item">
+          <label>Ingressos</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalIngresso }}</span>
+        </div>
+        <div class="total-item">
+          <label>30 Dias</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalTrintaDias }}</span>
+        </div>
+        <div class="total-item">
+          <label>60 Dias</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalSessentaDias }}</span>
+        </div>
+        <div class="total-item">
+          <label>90 Dias</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalNoventaDias }}</span>
+        </div>
+        <div class="total-item">
+          <label>6 Meses</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalSeisMeses }}</span>
+        </div>
+        <div class="total-item">
+          <label>9 Meses</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalNoveMeses }}</span>
+        </div>
+        <div class="total-item">
+          <label>1 Ano</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalUmAno }}</span>
+        </div>
+        <div class="total-item">
+          <label>18 Meses</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalDezoitoMeses }}</span>
+        </div>
+        <div class="total-item">
+          <label>Múltiplos Anos</label>
+          <span class="valor">{{ relatorioGeral.totais.TotalMultiplosAnos }}</span>
+        </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Tipo</th>
-            <th>Sétima</th>
-            <th>Despesas</th>
-            <th>Saldo do Dia</th>
-            <th>Saldo Acumulado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of saldoAcumulado.saldoPorData">
-            <td>{{ formatDate(item.data) }}</td>
-            <td>
-              <span *ngIf="item.tipo === 'saldo_inicial'" style="color: #28a745; font-weight: bold;">Saldo Inicial</span>
-              <span *ngIf="item.tipo === 'transacao'" style="color: #007bff;">Transação</span>
-            </td>
-            <td>
-              <span *ngIf="item.setima !== undefined">R$ {{ formatCurrency(item.setima) }}</span>
-              <span *ngIf="item.setima === undefined">-</span>
-            </td>
-            <td>
-              <span *ngIf="item.despesas !== undefined">R$ {{ formatCurrency(item.despesas) }}</span>
-              <span *ngIf="item.despesas === undefined">-</span>
-            </td>
-            <td>
-              <span *ngIf="item.saldo_dia !== undefined" [style.color]="item.saldo_dia >= 0 ? '#28a745' : '#dc3545'">
-                R$ {{ formatCurrency(item.saldo_dia) }}
-              </span>
-              <span *ngIf="item.saldo_dia === undefined">-</span>
-            </td>
-            <td [style.color]="item.saldo >= 0 ? '#28a745' : '#dc3545'" style="font-weight: bold;">
-              R$ {{ formatCurrency(item.saldo) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="reunioes-list">
-      <h3>Reuniões do Mês</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Membros</th>
-            <th>Visitantes</th>
-            <th>Sétima</th>
-            <th>Sétima PIX</th>
-            <th>Total Sétima</th>
-            <th>Novos Membros</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let reuniao of relatorioGeral.reunioes">
-            <td>{{ formatDate(reuniao.Data) }}</td>
-            <td>{{ reuniao.Membros }}</td>
-            <td>{{ reuniao.Visitantes }}</td>
-            <td>R$ {{ formatCurrency(reuniao.ValorSetima) }}</td>
-            <td>R$ {{ formatCurrency(reuniao.ValorSetimaPix) }}</td>
-            <td>R$ {{ formatCurrency(reuniao.ValorSetima + reuniao.ValorSetimaPix) }}</td>
-            <td>{{ reuniao.Ingresso + reuniao.TrintaDias + reuniao.SessentaDias + reuniao.NoventaDias + reuniao.SeisMeses + reuniao.NoveMeses + reuniao.UmAno + reuniao.DezoitoMeses + reuniao.MultiplosAnos }}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 
