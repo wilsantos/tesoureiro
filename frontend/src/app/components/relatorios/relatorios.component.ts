@@ -173,6 +173,199 @@ export class RelatoriosComponent implements OnInit {
     return todasDespesas;
   }
 
+  private readonly F = 'font-family: Calibri, Arial, sans-serif;';
+
+  private h2(texto: string): string {
+    return `<p style="${this.F} font-size: 16pt; font-weight: bold; color: #333; border-bottom: 2px solid #333; padding-bottom: 6px; margin-bottom: 12px; margin-top: 0;">${texto}</p>`;
+  }
+
+  private h3(texto: string): string {
+    return `<p style="${this.F} font-size: 13pt; font-weight: bold; color: #555; margin-top: 18px; margin-bottom: 6px;">${texto}</p>`;
+  }
+
+  private gerarHtmlWord(): string {
+    const estilos = `
+      body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; margin: 20px; }
+      p { font-family: Calibri, Arial, sans-serif; font-size: 11pt; margin: 4px 0; }
+      table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11pt; font-family: Calibri, Arial, sans-serif; }
+      th { font-family: Calibri, Arial, sans-serif; background-color: #f2f2f2; font-weight: bold; border: 1px solid #aaa; padding: 6px 8px; text-align: left; }
+      td { font-family: Calibri, Arial, sans-serif; border: 1px solid #aaa; padding: 6px 8px; text-align: left; }
+      .destaque { color: #1a7a1a; font-weight: bold; }
+      .saldo-inicial-row { background-color: #e8f5e9; }
+    `;
+
+    if (this.relatorioGeral) {
+      return this.gerarHtmlRelatorioGeral(estilos);
+    } else {
+      return this.gerarHtmlRelatorioDetalhado(estilos);
+    }
+  }
+
+  private gerarHtmlRelatorioGeral(estilos: string): string {
+    const r = this.relatorioGeral;
+    const t = r.totais;
+    const periodo = `${this.getNomeMes(r.mes)} de ${r.ano}`;
+
+    const tabelaPresencas = `
+      ${this.h3('Presenças')}
+      <table>
+        <thead><tr><th>Descrição</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>Total de Reuniões</td><td>${t.TotalReunioes}</td></tr>
+          <tr><td>Total de Membros</td><td>${t.TotalMembros}</td></tr>
+          <tr><td>Total de Visitantes</td><td>${t.TotalVisitantes}</td></tr>
+        </tbody>
+      </table>`;
+
+    const totalSetima = this.formatCurrency(t.TotalSetimaMes + t.TotalSetimaPixMes);
+    const tabelaValores = `
+      ${this.h3('Valores')}
+      <table>
+        <thead><tr><th>Descrição</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>Total Sétima</td><td class="destaque">R$ ${totalSetima}</td></tr>
+          <tr><td>Total de Despesas</td><td>R$ ${this.formatCurrency(t.TotalDespesasMes)}</td></tr>
+          <tr><td>Repasse</td><td>R$ ${this.formatCurrency(t.TotalRepasseMes)}</td></tr>
+          <tr><td>Compra de Literatura</td><td>R$ ${this.formatCurrency(t.TotalCompraLiteraturaMes)}</td></tr>
+        </tbody>
+      </table>`;
+
+    const tabelaFichas = `
+      ${this.h3('Trocas de Fichas')}
+      <table>
+        <thead><tr><th>Descrição</th><th>Quantidade</th></tr></thead>
+        <tbody>
+          <tr><td>Ingressos</td><td>${t.TotalIngresso}</td></tr>
+          <tr><td>30 Dias</td><td>${t.TotalTrintaDias}</td></tr>
+          <tr><td>60 Dias</td><td>${t.TotalSessentaDias}</td></tr>
+          <tr><td>90 Dias</td><td>${t.TotalNoventaDias}</td></tr>
+          <tr><td>6 Meses</td><td>${t.TotalSeisMeses}</td></tr>
+          <tr><td>9 Meses</td><td>${t.TotalNoveMeses}</td></tr>
+          <tr><td>1 Ano</td><td>${t.TotalUmAno}</td></tr>
+          <tr><td>18 Meses</td><td>${t.TotalDezoitoMeses}</td></tr>
+          <tr><td>Múltiplos Anos</td><td>${t.TotalMultiplosAnos}</td></tr>
+        </tbody>
+      </table>`;
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${estilos}</style></head><body>
+      ${this.h2('Relatório Geral de Reuniões')}
+      <p><strong>Grupo:</strong> ${r.grupo}</p>
+      <p><strong>Período:</strong> ${periodo}</p>
+      ${tabelaPresencas}
+      ${tabelaValores}
+      ${tabelaFichas}
+    </body></html>`;
+  }
+
+  private gerarHtmlRelatorioDetalhado(estilos: string): string {
+    const r = this.relatorioDetalhado;
+    const t = r.totais;
+    const periodo = `${this.getNomeMes(r.mes)} de ${r.ano}`;
+    const sa = this.saldoAcumulado;
+
+    // Tabela Totais do Mês
+    let linhasSaldoInicial = '';
+    if (sa) {
+      linhasSaldoInicial = `<tr><td>Saldo Inicial</td><td>R$ ${this.formatCurrency(sa.saldoInicial)}</td></tr>`;
+    }
+    let linhasSaldoFinal = '';
+    if (sa) {
+      linhasSaldoFinal = `
+        <tr><td>Saldo Inicial do Mês</td><td>R$ ${this.formatCurrency(sa.saldoInicial)}</td></tr>
+        <tr><td>Saldo Final do Mês</td><td class="destaque">R$ ${this.formatCurrency(sa.saldoFinal)}</td></tr>`;
+    }
+
+    const tabelaTotais = `
+      ${this.h3('Totais do Mês')}
+      <table>
+        <thead><tr><th>Descrição</th><th>Valor</th></tr></thead>
+        <tbody>
+          ${linhasSaldoInicial}
+          <tr><td>Total Sétima (Dinheiro)</td><td>R$ ${this.formatCurrency(t.TotalSetimaMes)}</td></tr>
+          <tr><td>Total Sétima (PIX)</td><td>R$ ${this.formatCurrency(t.TotalSetimaPixMes)}</td></tr>
+          <tr><td>Total Sétima Geral</td><td>R$ ${this.formatCurrency(t.TotalSetimaGeral)}</td></tr>
+          <tr><td>Total Despesas</td><td>R$ ${this.formatCurrency(t.TotalDespesasMes)}</td></tr>
+          <tr><td>Saldo do Mês</td><td class="destaque">R$ ${this.formatCurrency(t.SaldoMes)}</td></tr>
+          ${linhasSaldoFinal}
+        </tbody>
+      </table>`;
+
+    // Tabela Saldo Acumulado
+    let tabelaSaldoAcumulado = '';
+    if (sa && sa.saldoPorData && sa.saldoPorData.length > 0) {
+      const linhas = sa.saldoPorData.map((item: any) => {
+        const isSaldoInicial = item.tipo === 'saldo_inicial';
+        const trClass = isSaldoInicial ? ' class="saldo-inicial-row"' : '';
+        const dataLabel = isSaldoInicial
+          ? `${this.formatDate(item.data)} (Saldo Anterior)`
+          : this.formatDate(item.data);
+        const setimaDin = item.setimaDinheiro !== undefined ? `R$ ${this.formatCurrency(item.setimaDinheiro)}` : '-';
+        const setimaPix = item.setimaPix !== undefined ? `R$ ${this.formatCurrency(item.setimaPix)}` : '-';
+        const setimaTotal = item.setima !== undefined ? `R$ ${this.formatCurrency(item.setima)}` : '-';
+        const despesas = item.despesas !== undefined ? `R$ ${this.formatCurrency(item.despesas)}` : '-';
+        const saldoCor = item.saldo >= 0 ? '#1a7a1a' : '#c0392b';
+        return `<tr${trClass}>
+          <td>${dataLabel}</td>
+          <td>${setimaDin}</td>
+          <td>${setimaPix}</td>
+          <td>${setimaTotal}</td>
+          <td>${despesas}</td>
+          <td style="color:${saldoCor}; font-weight:bold;">R$ ${this.formatCurrency(item.saldo)}</td>
+        </tr>`;
+      }).join('');
+
+      tabelaSaldoAcumulado = `
+        ${this.h3(`Saldo Acumulado - ${periodo}`)}
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Sétima Din.</th>
+              <th>Sétima PIX</th>
+              <th>Total Sétima</th>
+              <th>Despesas</th>
+              <th>Saldo Acumulado</th>
+            </tr>
+          </thead>
+          <tbody>${linhas}</tbody>
+        </table>`;
+    }
+
+    // Tabela Detalhamento de Despesas
+    const todasDespesas = this.getTodasDespesas();
+    let tabelaDespesas = '';
+    if (todasDespesas.length > 0) {
+      const linhas = todasDespesas.map((d: any) =>
+        `<tr>
+          <td>${this.formatDate(d.dataReuniao)}</td>
+          <td>${d.Descricao}</td>
+          <td>R$ ${this.formatCurrency(d.ValorDespesa)}</td>
+        </tr>`
+      ).join('');
+      tabelaDespesas = `
+        ${this.h3('Detalhamento de Despesas')}
+        <table>
+          <thead>
+            <tr><th>Data da Reunião</th><th>Descrição</th><th>Valor</th></tr>
+          </thead>
+          <tbody>${linhas}</tbody>
+        </table>`;
+    } else {
+      tabelaDespesas = `
+        ${this.h3('Detalhamento de Despesas')}
+        <p style="color:#666; font-style:italic; font-family: Calibri, Arial, sans-serif;">Nenhuma despesa cadastrada</p>`;
+    }
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${estilos}</style></head><body>
+      ${this.h2('Relatório Detalhado de Sétima e Despesas')}
+      <p><strong>Grupo:</strong> ${r.grupo}</p>
+      <p><strong>Período:</strong> ${periodo}</p>
+      ${tabelaTotais}
+      ${tabelaSaldoAcumulado}
+      ${tabelaDespesas}
+    </body></html>`;
+  }
+
   async exportarParaWord() {
     if (!this.relatorioGeral && !this.relatorioDetalhado) {
       alert('Gere um relatório antes de exportar');
@@ -180,65 +373,20 @@ export class RelatoriosComponent implements OnInit {
     }
 
     try {
-      // Aguardar um pouco para garantir que o DOM está renderizado
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      // Encontrar o elemento do relatório
-      const relatorioElement = document.querySelector('.relatorio-container');
-      
-      if (!relatorioElement) {
-        alert('Erro ao encontrar conteúdo do relatório');
-        return;
-      }
-
-      // Clonar o elemento para não modificar o original
-      const clonedElement = relatorioElement.cloneNode(true) as HTMLElement;
-      
-      // Remover elementos que não devem aparecer no Word (botões, etc)
-      const elementosParaRemover = clonedElement.querySelectorAll('button, .btn');
-      elementosParaRemover.forEach(el => el.remove());
-
-      // Criar um HTML limpo para exportação
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h2 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
-            h3 { color: #555; margin-top: 20px; }
-            h4 { color: #666; margin-top: 15px; }
-            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; font-weight: bold; }
-            .totais-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
-            .total-item { background-color: #f8f9fa; padding: 15px; border-radius: 4px; }
-            .total-item label { display: block; font-weight: bold; margin-bottom: 5px; }
-            .total-item .valor { font-size: 1.2em; color: #007bff; }
-            .destaque { color: #28a745 !important; font-weight: bold; }
-            p { margin: 5px 0; }
-          </style>
-        </head>
-        <body>
-          ${clonedElement.innerHTML}
-        </body>
-        </html>
-      `;
+      const htmlContent = this.gerarHtmlWord();
 
       // Converter para DOCX
       const resultado = await asBlob(htmlContent);
-      
+
       // Garantir que temos um Blob (não Buffer)
       let blob: Blob;
       if (resultado instanceof Blob) {
         blob = resultado;
       } else {
-        // Se for Buffer ou ArrayBuffer, converter para Blob
         const arrayBuffer = resultado instanceof ArrayBuffer ? resultado : new Uint8Array(resultado as any).buffer;
         blob = new Blob([arrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       }
-      
+
       // Criar nome do arquivo (remover caracteres especiais)
       const grupoNome = (this.relatorioGeral?.grupo || this.relatorioDetalhado?.grupo || 'Relatorio')
         .replace(/[^a-zA-Z0-9]/g, '_');

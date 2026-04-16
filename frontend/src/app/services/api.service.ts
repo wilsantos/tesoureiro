@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 
 // Altere esta URL para o domínio de produção quando fizer o deploy
 //const API_URL = 'http://localhost/tesoureiro/api'; // Para desenvolvimento local
-const API_URL = 'https://williamsantos82.free.nf/api';
+//const API_URL = 'https://williamsantos82.free.nf/api';
+const API_URL = 'http://tesoureiro.apprateio.com.br/tesoureiro/api';
 
 // Se tiver problemas com 301 (redirecionamento), use index.php explicitamente:
 // Exemplo: `${API_URL}/grupo/index.php`
