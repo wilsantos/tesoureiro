@@ -173,7 +173,11 @@
           <span class="valor">R$ {{ formatCurrency(relatorioDetalhado.totais.TotalSetimaPixMes) }}</span>
         </div>
         <div class="total-item">
-          <label>Total Sétima Geral</label>
+          <label>Total Venda Literatura</label>
+          <span class="valor">R$ {{ formatCurrency(relatorioDetalhado.totais.TotalVendaLiteraturaMes) }}</span>
+        </div>
+        <div class="total-item">
+          <label>Total</label>
           <span class="valor">R$ {{ formatCurrency(relatorioDetalhado.totais.TotalSetimaGeral) }}</span>
         </div>
         <div class="total-item">
@@ -202,9 +206,10 @@
         <thead>
           <tr>
             <th>Data</th>
-            <th>Sétima Din.</th>
-            <th>Sétima PIX</th>
-            <th>Total Sétima</th>
+            <th>7a. Dinheiro</th>
+            <th>7a. Pix</th>
+            <th>Venda Lit.</th>
+            <th>Total</th>
             <th>Despesas</th>
             <th>Saldo Acumulado</th>
           </tr>
@@ -224,8 +229,12 @@
               <span *ngIf="item.setimaPix === undefined">-</span>
             </td>
             <td>
-              <span *ngIf="item.setima !== undefined">R$ {{ formatCurrency(item.setima) }}</span>
-              <span *ngIf="item.setima === undefined">-</span>
+              <span *ngIf="item.vendaLiteratura !== undefined">R$ {{ formatCurrency(item.vendaLiteratura) }}</span>
+              <span *ngIf="item.vendaLiteratura === undefined">-</span>
+            </td>
+            <td>
+              <span *ngIf="item.total !== undefined">R$ {{ formatCurrency(item.total) }}</span>
+              <span *ngIf="item.total === undefined">-</span>
             </td>
             <td>
               <span *ngIf="item.despesas !== undefined">R$ {{ formatCurrency(item.despesas) }}</span>

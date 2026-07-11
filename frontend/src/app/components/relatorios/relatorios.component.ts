@@ -54,7 +54,7 @@ export class RelatoriosComponent implements OnInit {
     this.relatorioGeral = null;
     this.relatorioDetalhado = null;
     this.saldoAcumulado = null;
-//debugger;
+    //debugger;
     // Buscar relatório
     this.apiService.getRelatorio(this.tipoRelatorio, this.filtroGrupo, this.filtroMes, this.filtroAno).subscribe({
       next: (data) => {
@@ -275,6 +275,7 @@ export class RelatoriosComponent implements OnInit {
         <tr><td>Saldo Final do Mês</td><td class="destaque">R$ ${this.formatCurrency(sa.saldoFinal)}</td></tr>`;
     }
 
+    debugger;
     const tabelaTotais = `
       ${this.h3('Totais do Mês')}
       <table>
@@ -283,7 +284,8 @@ export class RelatoriosComponent implements OnInit {
           ${linhasSaldoInicial}
           <tr><td>Total Sétima (Dinheiro)</td><td>R$ ${this.formatCurrency(t.TotalSetimaMes)}</td></tr>
           <tr><td>Total Sétima (PIX)</td><td>R$ ${this.formatCurrency(t.TotalSetimaPixMes)}</td></tr>
-          <tr><td>Total Sétima Geral</td><td>R$ ${this.formatCurrency(t.TotalSetimaGeral)}</td></tr>
+          <tr><td>Total Venda Literatura</td><td>R$ ${this.formatCurrency(t.TotalVendaLiteraturaMes)}</td></tr>
+          <tr><td>Total</td><td>R$ ${this.formatCurrency(t.TotalSetimaGeral)}</td></tr>
           <tr><td>Total Despesas</td><td>R$ ${this.formatCurrency(t.TotalDespesasMes)}</td></tr>
           <tr><td>Saldo do Mês</td><td class="destaque">R$ ${this.formatCurrency(t.SaldoMes)}</td></tr>
           ${linhasSaldoFinal}
@@ -301,14 +303,16 @@ export class RelatoriosComponent implements OnInit {
           : this.formatDate(item.data);
         const setimaDin = item.setimaDinheiro !== undefined ? `R$ ${this.formatCurrency(item.setimaDinheiro)}` : '-';
         const setimaPix = item.setimaPix !== undefined ? `R$ ${this.formatCurrency(item.setimaPix)}` : '-';
-        const setimaTotal = item.setima !== undefined ? `R$ ${this.formatCurrency(item.setima)}` : '-';
+        const vendaLit = item.vendaLiteratura !== undefined ? `R$ ${this.formatCurrency(item.vendaLiteratura)}` : '-';
+        const total = item.total !== undefined ? `R$ ${this.formatCurrency(item.total)}` : '-';
         const despesas = item.despesas !== undefined ? `R$ ${this.formatCurrency(item.despesas)}` : '-';
         const saldoCor = item.saldo >= 0 ? '#1a7a1a' : '#c0392b';
         return `<tr${trClass}>
           <td>${dataLabel}</td>
           <td>${setimaDin}</td>
           <td>${setimaPix}</td>
-          <td>${setimaTotal}</td>
+          <td>${vendaLit}</td>
+          <td>${total}</td>
           <td>${despesas}</td>
           <td style="color:${saldoCor}; font-weight:bold;">R$ ${this.formatCurrency(item.saldo)}</td>
         </tr>`;
@@ -320,9 +324,10 @@ export class RelatoriosComponent implements OnInit {
           <thead>
             <tr>
               <th>Data</th>
-              <th>Sétima Din.</th>
-              <th>Sétima PIX</th>
-              <th>Total Sétima</th>
+              <th>Sétima Dinheiro</th>
+              <th>Sétima Pix</th>
+              <th>Venda Literatura</th>
+              <th>Total</th>
               <th>Despesas</th>
               <th>Saldo Acumulado</th>
             </tr>

@@ -79,7 +79,7 @@ switch ($method) {
                 // Se houver reuniões anteriores ao mês selecionado, calcular o saldo acumulado
                 if ($dataSaldoInicial <= $dataFimMesAnterior) {
                     $stmtReunioesAnteriores = $conn->prepare("
-                        SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix
+                        SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix, r.VendaLiteratura
                         FROM reuniao r
                         WHERE r.IdGrupo = ? AND r.Data >= ? AND r.Data <= ?
                         ORDER BY r.Data ASC
@@ -97,14 +97,14 @@ switch ($method) {
                         $stmtDespesasAnt->execute([$reuniaoAnt['Id']]);
                         $despesaAnt = $stmtDespesasAnt->fetch();
                         $totalDespesasAnt = floatval($despesaAnt['TotalDespesas'] ?? 0);
-                        $totalSetimaAnt = floatval($reuniaoAnt['ValorSetima']) + floatval($reuniaoAnt['ValorSetimaPix']);
+                        $totalSetimaAnt = floatval($reuniaoAnt['ValorSetima']) + floatval($reuniaoAnt['ValorSetimaPix']) + floatval($reuniaoAnt['VendaLiteratura'] ?? 0);
                         $saldoAcumuladoAteMesAnterior += ($totalSetimaAnt - $totalDespesasAnt);
                     }
                 }
                 
                 // Buscar apenas as reuniões do mês selecionado
                 $stmtReunioes = $conn->prepare("
-                    SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix
+                    SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix, r.VendaLiteratura
                     FROM reuniao r
                     WHERE r.IdGrupo = ? AND r.Data >= ? AND r.Data <= ?
                     ORDER BY r.Data ASC
@@ -140,9 +140,10 @@ switch ($method) {
                 foreach ($reunioes as $reuniao) {
                     $setimaDinheiro = floatval($reuniao['ValorSetima']);
                     $setimaPix = floatval($reuniao['ValorSetimaPix']);
-                    $totalSetima = $setimaDinheiro + $setimaPix;
+                    $vendaLiteratura = floatval($reuniao['VendaLiteratura'] ?? 0);
+                    $total = $setimaDinheiro + $setimaPix + $vendaLiteratura;
                     $totalDespesas = $despesasPorReuniao[$reuniao['Id']] ?? 0;
-                    $saldoDia = $totalSetima - $totalDespesas;
+                    $saldoDia = $total - $totalDespesas;
                     
                     $saldoAcumulado += $saldoDia;
                     
@@ -151,7 +152,8 @@ switch ($method) {
                         'saldo' => $saldoAcumulado,
                         'setimaDinheiro' => $setimaDinheiro,
                         'setimaPix' => $setimaPix,
-                        'setima' => $totalSetima,
+                        'vendaLiteratura' => $vendaLiteratura,
+                        'total' => $total,
                         'despesas' => $totalDespesas,
                         'saldo_dia' => $saldoDia,
                         'tipo' => 'transacao'
@@ -295,6 +297,7 @@ switch ($method) {
                 $reunioesComDespesas = [];
                 $totalSetimaMes = 0;
                 $totalSetimaPixMes = 0;
+                $totalVendaLiteraturaMes = 0;
                 $totalDespesasMes = 0;
 
                 foreach ($reunioes as $reuniao) {
@@ -308,20 +311,24 @@ switch ($method) {
                     $despesas = $stmtDespesas->fetchAll();
 
                     $totalDespesasReuniao = array_sum(array_column($despesas, 'ValorDespesa'));
-                    $totalSetimaReuniao = floatval($reuniao['ValorSetima']) + floatval($reuniao['ValorSetimaPix']);
+                    $vendaLiteraturaReuniao = floatval($reuniao['VendaLiteratura'] ?? 0);
+                    $totalReuniao = floatval($reuniao['ValorSetima']) + floatval($reuniao['ValorSetimaPix']) + $vendaLiteraturaReuniao;
 
                     $reunioesComDespesas[] = [
                         'reuniao' => $reuniao,
                         'despesas' => $despesas,
-                        'totalSetima' => $totalSetimaReuniao,
+                        'totalSetima' => $totalReuniao,
                         'totalDespesas' => $totalDespesasReuniao,
-                        'saldo' => $totalSetimaReuniao - $totalDespesasReuniao
+                        'saldo' => $totalReuniao - $totalDespesasReuniao
                     ];
 
                     $totalSetimaMes += floatval($reuniao['ValorSetima']);
                     $totalSetimaPixMes += floatval($reuniao['ValorSetimaPix']);
+                    $totalVendaLiteraturaMes += $vendaLiteraturaReuniao;
                     $totalDespesasMes += $totalDespesasReuniao;
                 }
+
+                $totalGeral = $totalSetimaMes + $totalSetimaPixMes + $totalVendaLiteraturaMes;
 
                 echo json_encode([
                     'tipo' => 'detalhado',
@@ -332,9 +339,10 @@ switch ($method) {
                     'totais' => [
                         'TotalSetimaMes' => $totalSetimaMes,
                         'TotalSetimaPixMes' => $totalSetimaPixMes,
-                        'TotalSetimaGeral' => $totalSetimaMes + $totalSetimaPixMes,
+                        'TotalVendaLiteraturaMes' => $totalVendaLiteraturaMes,
+                        'TotalSetimaGeral' => $totalGeral,
                         'TotalDespesasMes' => $totalDespesasMes,
-                        'SaldoMes' => ($totalSetimaMes + $totalSetimaPixMes) - $totalDespesasMes
+                        'SaldoMes' => $totalGeral - $totalDespesasMes
                     ]
                 ], JSON_UNESCAPED_UNICODE);
 
