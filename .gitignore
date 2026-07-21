@@ -1,5 +1,6 @@
 # Arquivos sensíveis - NÃO FAZER COMMIT
 api/config/database.php
+.env
 
 # Frontend
 frontend/node_modules/

@@ -1,13 +1,22 @@
 <?php
 // Headers CORS removidos daqui - devem ser enviados apenas nos endpoints específicos
 // para evitar problemas com redirecionamentos
+//
+// Configure via variáveis de ambiente (Docker) ou edite os valores padrão abaixo (XAMPP/local).
 
 class Database {
-    private $host = 'sql310.infinityfree.com';
-    private $db_name = 'if0_40900505_db_tesouraria';
-    private $username = 'if0_40900505';
-    private $password = ''; // Preencha com a senha do banco de dados
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
     private $conn;
+
+    public function __construct() {
+        $this->host = getenv('DB_HOST') ?: 'localhost';
+        $this->db_name = getenv('DB_NAME') ?: 'tesouraria';
+        $this->username = getenv('DB_USER') ?: 'root';
+        $this->password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : '';
+    }
 
     public function getConnection() {
         $this->conn = null;
@@ -22,8 +31,6 @@ class Database {
             $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
             error_log("Connection Error: " . $e->getMessage());
-            // Em produção, não exponha detalhes do erro
-            // Mas registre em log para debug
             error_log("DB Error Details - Host: " . $this->host . ", DB: " . $this->db_name);
             throw new Exception("Erro na conexão com o banco de dados.");
         }

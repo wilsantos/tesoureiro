@@ -104,22 +104,16 @@ cd frontend
 npm install
 ```
 
-2. Configure a URL da API no arquivo `src/app/services/api.service.ts`:
+2. Configure a URL da API no arquivo `src/environments/environment.ts`:
 ```typescript
-const API_URL = 'https://seu-dominio.infinityfreeapp.com/api';
+apiUrl: '/api'  // Docker e produção com gateway
+// Para XAMPP local sem Docker: 'http://localhost/tesoureiro/api'
 ```
-
-3. Para desenvolvimento local, altere para:
-```typescript
-const API_URL = 'http://localhost/tesoureiro/api';
-```
-
-4. Execute o servidor de desenvolvimento:
 ```bash
 ng serve
 ```
 
-5. Para produção, faça o build:
+3. Para produção, faça o build:
 ```bash
 ng build --configuration production
 ```
@@ -211,7 +205,94 @@ ng build --configuration production
 - **Backend**: PHP 7.4+
 - **Frontend**: Angular 17
 - **Banco de Dados**: MySQL/MariaDB
-- **Servidor**: InfinityFree ou XAMPP (desenvolvimento)
+- **Servidor**: InfinityFree, XAMPP (desenvolvimento) ou Docker
+
+## Docker
+
+### Pré-requisitos
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado (Windows, macOS ou Linux)
+
+### Configuração inicial
+
+1. Copie o arquivo de variáveis de ambiente:
+
+```bash
+cp .env.example .env
+```
+
+2. Ajuste as senhas em `.env` se necessário.
+
+### Produção (containers buildados)
+
+```bash
+docker compose up -d --build
+```
+
+- **Aplicação:** http://localhost:8081
+- **API:** http://localhost:8081/api/grupo/
+
+### Desenvolvimento (hot-reload)
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+```
+
+- A API PHP usa volume bind (`./api`) — alterações refletem imediatamente
+- O frontend roda com `ng serve` e recarrega ao editar arquivos
+- Acesse pela mesma URL: http://localhost:8081
+
+### Comandos úteis
+
+```bash
+# Ver logs
+docker compose logs -f
+
+# Parar containers
+docker compose down
+
+# Parar e remover volume do banco (reset completo)
+docker compose down -v
+
+# Acessar shell do container da API
+docker compose exec api bash
+```
+
+### Solução de problemas
+
+**Porta já em uso (`Bind for 0.0.0.0:8080 failed`)**
+
+Outro processo ou container Docker pode estar usando a porta. Altere `APP_PORT` no `.env` (ex.: `8081`) e suba novamente:
+
+```bash
+docker compose up -d
+```
+
+Para ver o que está usando uma porta no Windows:
+
+```bash
+netstat -ano | findstr :8080
+```
+
+### Importar backup existente
+
+Os scripts em `docker/mysql/init/` rodam apenas na **primeira** criação do volume. Para importar um backup:
+
+```bash
+docker compose up -d db
+docker compose exec -T db mysql -u root -p${MYSQL_ROOT_PASSWORD} tesouraria < database/tesouraria-backup-2026-07-10.sql
+```
+
+### Variáveis de ambiente
+
+| Variável | Descrição |
+|----------|-----------|
+| `MYSQL_ROOT_PASSWORD` | Senha root do MariaDB |
+| `MYSQL_DATABASE` | Nome do banco (padrão: `tesouraria`) |
+| `MYSQL_USER` / `MYSQL_PASSWORD` | Usuário da aplicação |
+| `APP_PORT` | Porta exposta do gateway (padrão: `8081`; use outra se `8080` já estiver ocupada) |
+
+A API lê `DB_HOST`, `DB_NAME`, `DB_USER` e `DB_PASSWORD` automaticamente no Docker.
 
 ## Desenvolvimento
 
