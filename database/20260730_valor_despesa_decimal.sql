@@ -1,0 +1,1 @@
+ALTER TABLE `despesas` MODIFY `ValorDespesa` DECIMAL(12,2) NOT NULL;

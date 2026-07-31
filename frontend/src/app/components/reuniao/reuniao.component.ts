@@ -48,6 +48,7 @@ export class ReuniaoComponent implements OnInit {
   showDespesaModal: boolean = false;
   isEdit: boolean = false;
   isEditDespesa: boolean = false;
+  valorDespesaInput: string = '';
   filtroGrupo: number | null = null;
   filtroMes: number | null = null;
   filtroAno: number | null = null;
@@ -275,6 +276,7 @@ export class ReuniaoComponent implements OnInit {
         repasse: editDespesa.repasse || false,
         compra_literatura: editDespesa.compra_literatura || false
       };
+      this.valorDespesaInput = this.formatMonetaryInput(editDespesa.ValorDespesa);
       this.isEditDespesa = true;
     } else {
       this.despesa = {
@@ -286,6 +288,7 @@ export class ReuniaoComponent implements OnInit {
         compra_literatura: false,
         Comprovante: null
       };
+      this.valorDespesaInput = '';
       this.isEditDespesa = false;
     }
     this.showDespesaModal = true;
@@ -293,6 +296,7 @@ export class ReuniaoComponent implements OnInit {
 
   closeDespesaModal() {
     this.showDespesaModal = false;
+    this.valorDespesaInput = '';
     this.despesa = {
       Id: null,
       IdReuniao: null,
@@ -317,8 +321,58 @@ export class ReuniaoComponent implements OnInit {
     }
   }
 
+  formatMonetaryInput(value: string | number | null | undefined): string {
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+
+    const numero = typeof value === 'number' ? value : this.parseMonetaryValue(value);
+    if (!numero) {
+      return '';
+    }
+
+    return numero.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  onValorDespesaInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/[^\d,]/g, '');
+
+    const commaIndex = value.indexOf(',');
+    if (commaIndex !== -1) {
+      const integerPart = value.slice(0, commaIndex);
+      const decimalPart = value.slice(commaIndex + 1).replace(/,/g, '').slice(0, 2);
+      value = `${integerPart},${decimalPart}`;
+    }
+
+    this.valorDespesaInput = value;
+    input.value = value;
+  }
+
+  parseMonetaryValue(value: string | number): number {
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    let normalized = String(value).trim();
+    if (!normalized) {
+      return 0;
+    }
+
+    if (normalized.includes(',')) {
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    }
+
+    return parseFloat(normalized) || 0;
+  }
+
   saveDespesa() {
-    if (!this.despesa.Descricao || !this.despesa.ValorDespesa) {
+    const valorDespesa = this.parseMonetaryValue(this.valorDespesaInput);
+
+    if (!this.despesa.Descricao || !valorDespesa) {
       alert('Preencha todos os campos obrigatórios');
       return;
     }
@@ -330,7 +384,7 @@ export class ReuniaoComponent implements OnInit {
 
     const despesaParaSalvar = {
       ...this.despesa,
-      ValorDespesa: parseFloat(this.despesa.ValorDespesa)
+      ValorDespesa: valorDespesa
     };
 
     const operacao = this.isEditDespesa 

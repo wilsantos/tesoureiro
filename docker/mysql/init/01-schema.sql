@@ -21,7 +21,7 @@ CREATE TABLE `despesas` (
   `Id` int(11) NOT NULL,
   `IdReuniao` int(11) NOT NULL,
   `Descricao` varchar(400) NOT NULL,
-  `ValorDespesa` decimal(10,0) NOT NULL,
+  `ValorDespesa` decimal(12,2) NOT NULL,
   `Comprovante` mediumblob NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
