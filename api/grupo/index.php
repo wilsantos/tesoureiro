@@ -34,8 +34,8 @@ switch ($method) {
             // Buscar grupo específico
             $id = $_GET['id'];
             $stmt = $conn->prepare("SELECT 
-                grupo.*, csa.Nome as CSA_Nome FROM grupo INNER JOIN csa ON grupo.CSA = csa.Id 
-                WHERE grupo.Id = ?");
+                grupo.*, csa.\"Nome\" as CSA_Nome FROM grupo INNER JOIN csa ON grupo.\"CSA\" = csa.\"Id\" 
+                WHERE grupo.\"Id\" = ?");
             $stmt->execute([$id]);
             $grupo = $stmt->fetch();
             
@@ -48,8 +48,8 @@ switch ($method) {
         } else {
             // Listar todos os grupos
             $stmt = $conn->query("SELECT 
-                grupo.*, csa.Nome as CSA_Nome FROM grupo INNER JOIN csa ON grupo.CSA = csa.Id 
-                ORDER BY grupo.Nome");
+                grupo.*, csa.\"Nome\" as CSA_Nome FROM grupo INNER JOIN csa ON grupo.\"CSA\" = csa.\"Id\" 
+                ORDER BY grupo.\"Nome\"");
             $grupos = $stmt->fetchAll();
             echo json_encode($grupos, JSON_UNESCAPED_UNICODE);
         }
@@ -75,7 +75,7 @@ switch ($method) {
             $saldo = isset($data['Saldo']) ? $data['Saldo'] : 0;
             $dataSaldo = isset($data['DataSaldo']) && $data['DataSaldo'] !== '' ? $data['DataSaldo'] : null;
             
-            $stmt = $conn->prepare("INSERT INTO grupo (Nome, Endereco, CSA, Saldo, DataSaldo) VALUES (?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO grupo (\"Nome\", \"Endereco\", \"CSA\", \"Saldo\", \"DataSaldo\") VALUES (?, ?, ?, ?, ?)");
             if ($stmt->execute([$data['Nome'], $data['Endereco'], $data['CSA'], $saldo, $dataSaldo])) {
                 $id = $conn->lastInsertId();
                 http_response_code(201);
@@ -106,7 +106,7 @@ switch ($method) {
         $saldo = isset($data['Saldo']) ? $data['Saldo'] : 0;
         $dataSaldo = isset($data['DataSaldo']) && $data['DataSaldo'] !== '' ? $data['DataSaldo'] : null;
 
-        $stmt = $conn->prepare("UPDATE grupo SET Nome = ?, Endereco = ?, CSA = ?, Saldo = ?, DataSaldo = ? WHERE Id = ?");
+        $stmt = $conn->prepare("UPDATE grupo SET \"Nome\" = ?, \"Endereco\" = ?, \"CSA\" = ?, \"Saldo\" = ?, \"DataSaldo\" = ? WHERE \"Id\" = ?");
         if ($stmt->execute([$data['Nome'], $data['Endereco'], $data['CSA'], $saldo, $dataSaldo, $data['Id']])) {
             echo json_encode(['message' => 'Grupo atualizado com sucesso'], JSON_UNESCAPED_UNICODE);
         } else {
@@ -123,7 +123,7 @@ switch ($method) {
         }
 
         $id = $_GET['id'];
-        $stmt = $conn->prepare("DELETE FROM grupo WHERE Id = ?");
+        $stmt = $conn->prepare("DELETE FROM grupo WHERE \"Id\" = ?");
         if ($stmt->execute([$id])) {
             echo json_encode(['message' => 'Grupo deletado com sucesso'], JSON_UNESCAPED_UNICODE);
         } else {

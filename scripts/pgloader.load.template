@@ -1,0 +1,9 @@
+LOAD DATABASE
+     FROM __MYSQL_URI__
+     INTO __PG_URI__
+
+ WITH include drop, create tables, create indexes, reset sequences,
+      quote identifiers
+
+ CAST type datetime to timestamptz drop default drop not null using zero-dates-to-null,
+      type date drop not null drop default using zero-dates-to-null

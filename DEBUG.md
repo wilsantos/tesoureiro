@@ -66,9 +66,8 @@ Acesse diretamente no navegador ou use uma ferramenta como Postman:
 ### 5. Verificar Banco de Dados Diretamente
 
 1. Acesse o painel do InfinityFree
-2. Vá em "MySQL Databases"
-3. Clique em "phpMyAdmin"
-4. Verifique se os dados estão sendo salvos nas tabelas
+2. Vá em "PostgreSQL Databases" (ou use phpPgAdmin, se disponível)
+3. Verifique se os dados estão sendo salvos nas tabelas
 
 ### 6. Testar API com cURL
 

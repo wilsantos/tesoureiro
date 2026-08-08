@@ -32,7 +32,7 @@ switch ($method) {
     case 'GET':
         // Listar todos os CSAs
         try {
-            $stmt = $conn->query("SELECT * FROM csa ORDER BY Nome");
+            $stmt = $conn->query("SELECT * FROM csa ORDER BY \"Nome\"");
             $csas = $stmt->fetchAll();
             echo json_encode($csas, JSON_UNESCAPED_UNICODE);
         } catch (PDOException $e) {

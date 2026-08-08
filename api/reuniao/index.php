@@ -33,7 +33,7 @@ switch ($method) {
         if (isset($_GET['id'])) {
             // Buscar reunião específica
             $id = $_GET['id'];
-            $stmt = $conn->prepare("SELECT * FROM reuniao WHERE Id = ?");
+            $stmt = $conn->prepare("SELECT * FROM reuniao WHERE \"Id\" = ?");
             $stmt->execute([$id]);
             $reuniao = $stmt->fetch();
             
@@ -50,28 +50,28 @@ switch ($method) {
             
             // Filtro por grupo
             if (isset($_GET['IdGrupo']) && $_GET['IdGrupo'] !== '' && $_GET['IdGrupo'] !== null) {
-                $where[] = "r.IdGrupo = ?";
+                $where[] = "r.\"IdGrupo\" = ?";
                 $params[] = $_GET['IdGrupo'];
             }
             
             // Filtro por mês
             if (isset($_GET['mes']) && $_GET['mes'] !== '' && $_GET['mes'] !== null) {
-                $where[] = "MONTH(r.Data) = ?";
+                $where[] = "EXTRACT(MONTH FROM r.\"Data\") = ?";
                 $params[] = $_GET['mes'];
             }
             
             // Filtro por ano
             if (isset($_GET['ano']) && $_GET['ano'] !== '' && $_GET['ano'] !== null) {
-                $where[] = "YEAR(r.Data) = ?";
+                $where[] = "EXTRACT(YEAR FROM r.\"Data\") = ?";
                 $params[] = $_GET['ano'];
             }
             
             // Montar query
-            $sql = "SELECT r.*, g.Nome as NomeGrupo FROM reuniao r LEFT JOIN grupo g ON r.IdGrupo = g.Id";
+            $sql = "SELECT r.*, g.\"Nome\" as NomeGrupo FROM reuniao r LEFT JOIN grupo g ON r.\"IdGrupo\" = g.\"Id\"";
             if (!empty($where)) {
                 $sql .= " WHERE " . implode(" AND ", $where);
             }
-            $sql .= " ORDER BY r.Data DESC";
+            $sql .= " ORDER BY r.\"Data\" DESC";
             
             if (!empty($params)) {
                 $stmt = $conn->prepare($sql);
@@ -112,9 +112,9 @@ switch ($method) {
         }
 
         try {
-            $stmt = $conn->prepare("INSERT INTO reuniao (IdGrupo, Data, Membros, Visitantes, ValorSetima, ValorSetimaPix, 
-                                  VendaLiteratura, Ingresso, TrintaDias, SessentaDias, NoventaDias, SeisMeses, 
-                                  NoveMeses, UmAno, DezoitoMeses, MultiplosAnos, FatosRelevantes) 
+            $stmt = $conn->prepare("INSERT INTO reuniao (\"IdGrupo\", \"Data\", \"Membros\", \"Visitantes\", \"ValorSetima\", \"ValorSetimaPix\", 
+                                  \"VendaLiteratura\", \"Ingresso\", \"TrintaDias\", \"SessentaDias\", \"NoventaDias\", \"SeisMeses\", 
+                                  \"NoveMeses\", \"UmAno\", \"DezoitoMeses\", \"MultiplosAnos\", \"FatosRelevantes\") 
                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             if ($stmt->execute([
@@ -160,11 +160,11 @@ switch ($method) {
             }
         }
 
-        $stmt = $conn->prepare("UPDATE reuniao SET IdGrupo = ?, Data = ?, Membros = ?, Visitantes = ?, 
-                              ValorSetima = ?, ValorSetimaPix = ?, VendaLiteratura = ?, Ingresso = ?, 
-                              TrintaDias = ?, SessentaDias = ?, NoventaDias = ?, SeisMeses = ?, 
-                              NoveMeses = ?, UmAno = ?, DezoitoMeses = ?, MultiplosAnos = ?, FatosRelevantes = ? 
-                              WHERE Id = ?");
+        $stmt = $conn->prepare("UPDATE reuniao SET \"IdGrupo\" = ?, \"Data\" = ?, \"Membros\" = ?, \"Visitantes\" = ?, 
+                              \"ValorSetima\" = ?, \"ValorSetimaPix\" = ?, \"VendaLiteratura\" = ?, \"Ingresso\" = ?, 
+                              \"TrintaDias\" = ?, \"SessentaDias\" = ?, \"NoventaDias\" = ?, \"SeisMeses\" = ?, 
+                              \"NoveMeses\" = ?, \"UmAno\" = ?, \"DezoitoMeses\" = ?, \"MultiplosAnos\" = ?, \"FatosRelevantes\" = ? 
+                              WHERE \"Id\" = ?");
         
         if ($stmt->execute([
             $data['IdGrupo'], $data['Data'], $data['Membros'], $data['Visitantes'],
@@ -187,7 +187,7 @@ switch ($method) {
         }
 
         $id = $_GET['id'];
-        $stmt = $conn->prepare("DELETE FROM reuniao WHERE Id = ?");
+        $stmt = $conn->prepare("DELETE FROM reuniao WHERE \"Id\" = ?");
         if ($stmt->execute([$id])) {
             echo json_encode(['message' => 'Reunião deletada com sucesso'], JSON_UNESCAPED_UNICODE);
         } else {
