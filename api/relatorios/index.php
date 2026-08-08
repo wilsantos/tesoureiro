@@ -59,7 +59,7 @@ switch ($method) {
                 
                 // Se não houver DataSaldo, usar a primeira data de reunião ou data atual
                 if (!$dataSaldoInicial) {
-                    $stmtPrimeiraReuniao = $conn->prepare("SELECT MIN(\"Data\") as PrimeiraData FROM reuniao WHERE \"IdGrupo\" = ?");
+                    $stmtPrimeiraReuniao = $conn->prepare("SELECT MIN(\"Data\") as \"PrimeiraData\" FROM reuniao WHERE \"IdGrupo\" = ?");
                     $stmtPrimeiraReuniao->execute([$idGrupo]);
                     $primeiraReuniao = $stmtPrimeiraReuniao->fetch();
                     $dataSaldoInicial = $primeiraReuniao['PrimeiraData'] ? $primeiraReuniao['PrimeiraData'] : date('Y-m-d');
@@ -89,7 +89,7 @@ switch ($method) {
                     // Calcular saldo acumulado até o fim do mês anterior
                     foreach ($reunioesAnteriores as $reuniaoAnt) {
                         $stmtDespesasAnt = $conn->prepare("
-                            SELECT SUM(\"ValorDespesa\") as TotalDespesas
+                            SELECT SUM(\"ValorDespesa\") as \"TotalDespesas\"
                             FROM despesas
                             WHERE \"IdReuniao\" = ?
                         ");
@@ -115,7 +115,7 @@ switch ($method) {
                 $despesasPorReuniao = [];
                 foreach ($reunioes as $reuniao) {
                     $stmtDespesas = $conn->prepare("
-                        SELECT SUM(\"ValorDespesa\") as TotalDespesas
+                        SELECT SUM(\"ValorDespesa\") as \"TotalDespesas\"
                         FROM despesas
                         WHERE \"IdReuniao\" = ?
                     ");
@@ -201,20 +201,20 @@ switch ($method) {
                 // Calcular totais das reuniões
                 $stmtTotais = $conn->prepare("
                     SELECT 
-                        COUNT(r.\"Id\") as TotalReunioes,
-                        SUM(r.\"Membros\") as TotalMembros,
-                        SUM(r.\"Visitantes\") as TotalVisitantes,
-                        SUM(r.\"ValorSetima\") as TotalSetimaMes,
-                        SUM(r.\"ValorSetimaPix\") as TotalSetimaPixMes,
-                        SUM(r.\"Ingresso\") as TotalIngresso,
-                        SUM(r.\"TrintaDias\") as TotalTrintaDias,
-                        SUM(r.\"SessentaDias\") as TotalSessentaDias,
-                        SUM(r.\"NoventaDias\") as TotalNoventaDias,
-                        SUM(r.\"SeisMeses\") as TotalSeisMeses,
-                        SUM(r.\"NoveMeses\") as TotalNoveMeses,
-                        SUM(r.\"UmAno\") as TotalUmAno,
-                        SUM(r.\"DezoitoMeses\") as TotalDezoitoMeses,
-                        SUM(r.\"MultiplosAnos\") as TotalMultiplosAnos
+                        COUNT(r.\"Id\") as \"TotalReunioes\",
+                        SUM(r.\"Membros\") as \"TotalMembros\",
+                        SUM(r.\"Visitantes\") as \"TotalVisitantes\",
+                        SUM(r.\"ValorSetima\") as \"TotalSetimaMes\",
+                        SUM(r.\"ValorSetimaPix\") as \"TotalSetimaPixMes\",
+                        SUM(r.\"Ingresso\") as \"TotalIngresso\",
+                        SUM(r.\"TrintaDias\") as \"TotalTrintaDias\",
+                        SUM(r.\"SessentaDias\") as \"TotalSessentaDias\",
+                        SUM(r.\"NoventaDias\") as \"TotalNoventaDias\",
+                        SUM(r.\"SeisMeses\") as \"TotalSeisMeses\",
+                        SUM(r.\"NoveMeses\") as \"TotalNoveMeses\",
+                        SUM(r.\"UmAno\") as \"TotalUmAno\",
+                        SUM(r.\"DezoitoMeses\") as \"TotalDezoitoMeses\",
+                        SUM(r.\"MultiplosAnos\") as \"TotalMultiplosAnos\"
                     FROM reuniao r
                     WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ?
                 ");
@@ -223,7 +223,7 @@ switch ($method) {
 
                 // Calcular total de despesas do período
                 $stmtDespesas = $conn->prepare("
-                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as TotalDespesasMes
+                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as \"TotalDespesasMes\"
                     FROM despesas d
                     INNER JOIN reuniao r ON d.\"IdReuniao\" = r.\"Id\"
                     WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ?
@@ -231,7 +231,7 @@ switch ($method) {
                 $stmtDespesas->execute([$idGrupo, $mes, $ano]);
 
                 $stmtRepasse = $conn->prepare("
-                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as TotalRepasseMes
+                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as \"TotalRepasseMes\"
                     FROM despesas d
                     INNER JOIN reuniao r ON d.\"IdReuniao\" = r.\"Id\"
                     WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ? AND d.repasse = TRUE
@@ -239,7 +239,7 @@ switch ($method) {
                 $stmtRepasse->execute([$idGrupo, $mes, $ano]);
 
                 $stmtCompraLiteratura = $conn->prepare("
-                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as TotalCompraLiteraturaMes
+                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as \"TotalCompraLiteraturaMes\"
                     FROM despesas d
                     INNER JOIN reuniao r ON d.\"IdReuniao\" = r.\"Id\"
                     WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ? AND d.compra_literatura = TRUE
@@ -283,7 +283,7 @@ switch ($method) {
                 $stmt = $conn->prepare("
                     SELECT 
                         r.*,
-                        g.\"Nome\" as NomeGrupo
+                        g.\"Nome\" as \"NomeGrupo\"
                     FROM reuniao r
                     INNER JOIN grupo g ON r.\"IdGrupo\" = g.\"Id\"
                     WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ?

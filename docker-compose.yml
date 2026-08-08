@@ -24,6 +24,8 @@ services:
       context: .
       dockerfile: docker/nginx/Dockerfile
     restart: unless-stopped
+    volumes:
+      - ./frontend/publish:/usr/share/nginx/html:ro
 
   gateway:
     image: nginx:alpine
