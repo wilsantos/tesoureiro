@@ -115,13 +115,17 @@ switch ($method) {
                 }
             }
             
-            $stmt = $conn->prepare("INSERT INTO despesas (\"IdReuniao\", \"Descricao\", \"ValorDespesa\", repasse, compra_literatura, \"Comprovante\") VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare(
+                "INSERT INTO despesas (\"IdReuniao\", \"Descricao\", \"ValorDespesa\", repasse, compra_literatura, \"Comprovante\")
+                 VALUES (?, ?, ?, CAST(? AS BOOLEAN), CAST(? AS BOOLEAN), ?)
+                 RETURNING \"Id\""
+            );
             
             $repasse = toPgBool($data['repasse'] ?? false);
             $compra_literatura = toPgBool($data['compra_literatura'] ?? false);
             
             if ($stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $repasse, $compra_literatura, $comprovante])) {
-                $id = $conn->lastInsertId();
+                $id = $stmt->fetchColumn();
                 http_response_code(201);
                 echo json_encode(['message' => 'Despesa criada com sucesso', 'id' => $id], JSON_UNESCAPED_UNICODE);
             } else {
@@ -159,10 +163,10 @@ switch ($method) {
                 if ($comprovante === false) {
                     throw new Exception('Comprovante inválido (deve ser base64)');
                 }
-                $stmt = $conn->prepare("UPDATE despesas SET \"IdReuniao\" = ?, \"Descricao\" = ?, \"ValorDespesa\" = ?, repasse = ?, compra_literatura = ?, \"Comprovante\" = ? WHERE \"Id\" = ?");
+                $stmt = $conn->prepare("UPDATE despesas SET \"IdReuniao\" = ?, \"Descricao\" = ?, \"ValorDespesa\" = ?, repasse = CAST(? AS BOOLEAN), compra_literatura = CAST(? AS BOOLEAN), \"Comprovante\" = ? WHERE \"Id\" = ?");
                 $result = $stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $repasse, $compra_literatura, $comprovante, $data['Id']]);
             } else {
-                $stmt = $conn->prepare("UPDATE despesas SET \"IdReuniao\" = ?, \"Descricao\" = ?, \"ValorDespesa\" = ?, repasse = ?, compra_literatura = ? WHERE \"Id\" = ?");
+                $stmt = $conn->prepare("UPDATE despesas SET \"IdReuniao\" = ?, \"Descricao\" = ?, \"ValorDespesa\" = ?, repasse = CAST(? AS BOOLEAN), compra_literatura = CAST(? AS BOOLEAN) WHERE \"Id\" = ?");
                 $result = $stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $repasse, $compra_literatura, $data['Id']]);
             }
             
@@ -172,6 +176,10 @@ switch ($method) {
                 http_response_code(500);
                 echo json_encode(['message' => 'Erro ao atualizar despesa'], JSON_UNESCAPED_UNICODE);
             }
+        } catch (PDOException $e) {
+            http_response_code(500);
+            error_log("Despesa PUT PDO Error: " . $e->getMessage());
+            echo json_encode(['message' => 'Erro ao atualizar despesa', 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(['message' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
