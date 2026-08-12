@@ -17,6 +17,18 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
+/**
+ * PDO envia o boolean PHP false como string vazia ("").
+ * O PostgreSQL rejeita isso em colunas BOOLEAN.
+ */
+function toPgBool($value): string {
+    if (is_string($value)) {
+        $normalized = strtolower(trim($value));
+        return in_array($normalized, ['1', 'true', 't', 'yes', 'on'], true) ? 'true' : 'false';
+    }
+    return $value ? 'true' : 'false';
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
@@ -105,8 +117,8 @@ switch ($method) {
             
             $stmt = $conn->prepare("INSERT INTO despesas (\"IdReuniao\", \"Descricao\", \"ValorDespesa\", repasse, compra_literatura, \"Comprovante\") VALUES (?, ?, ?, ?, ?, ?)");
             
-            $repasse = isset($data['repasse']) ? (bool)$data['repasse'] : false;
-            $compra_literatura = isset($data['compra_literatura']) ? (bool)$data['compra_literatura'] : false;
+            $repasse = toPgBool($data['repasse'] ?? false);
+            $compra_literatura = toPgBool($data['compra_literatura'] ?? false);
             
             if ($stmt->execute([$data['IdReuniao'], $data['Descricao'], $data['ValorDespesa'], $repasse, $compra_literatura, $comprovante])) {
                 $id = $conn->lastInsertId();
@@ -138,8 +150,8 @@ switch ($method) {
         }
 
         try {
-            $repasse = isset($data['repasse']) ? (bool)$data['repasse'] : false;
-            $compra_literatura = isset($data['compra_literatura']) ? (bool)$data['compra_literatura'] : false;
+            $repasse = toPgBool($data['repasse'] ?? false);
+            $compra_literatura = toPgBool($data['compra_literatura'] ?? false);
             
             // Se comprovante foi enviado, atualizar também
             if (isset($data['Comprovante']) && !empty($data['Comprovante'])) {
