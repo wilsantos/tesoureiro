@@ -3,7 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthResponse, Usuario } from '../models/usuario.model';
+import {
+  AuthResponse,
+  EncerrarEncargoResponse,
+  OnboardingRequest,
+  OnboardingResponse,
+  Usuario
+} from '../models/usuario.model';
 
 const TOKEN_KEY = 'na_token';
 const USUARIO_KEY = 'na_usuario';
@@ -43,6 +49,36 @@ export class AuthService {
     }).pipe(tap((res) => this.setSession(res)));
   }
 
+  completarOnboarding(body: OnboardingRequest): Observable<OnboardingResponse> {
+    return this.http.post<OnboardingResponse>(`${environment.apiUrl}/auth/onboarding`, body).pipe(
+      tap((res) => {
+        if (res.usuario) {
+          this.persistUsuario(res.usuario);
+        } else {
+          const atual = this.getUsuario();
+          if (atual) {
+            this.persistUsuario({
+              ...atual,
+              OnboardingCompleto: res.OnboardingCompleto,
+              Grupos: res.Grupos
+            });
+          }
+        }
+      })
+    );
+  }
+
+  encerrarEncargos(grupoId: number): Observable<EncerrarEncargoResponse> {
+    return this.http.post<EncerrarEncargoResponse>(
+      `${environment.apiUrl}/auth/encerrar-encargo`,
+      { GrupoId: grupoId }
+    ).pipe(tap((res) => {
+      if (res.usuario) {
+        this.persistUsuario(res.usuario);
+      }
+    }));
+  }
+
   logout(): void {
     this.ngZone.run(() => {
       localStorage.removeItem(TOKEN_KEY);
@@ -64,10 +100,27 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  isOnboardingComplete(): boolean {
+    return this.getUsuario()?.OnboardingCompleto === true;
+  }
+
   carregarUsuarioAtual(): Observable<Usuario> {
     return this.http.get<Usuario>(`${environment.apiUrl}/auth/me`).pipe(
       tap((usuario) => this.persistUsuario(usuario))
     );
+  }
+
+  navigateAfterAuth(): void {
+    this.carregarUsuarioAtual().subscribe({
+      next: (usuario) => {
+        if (usuario.OnboardingCompleto) {
+          this.router.navigate(['/app/grupos']);
+        } else {
+          this.router.navigate(['/app/cadastro']);
+        }
+      },
+      error: () => this.router.navigate(['/login'])
+    });
   }
 
   private setSession(res: AuthResponse): void {

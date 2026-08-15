@@ -9,6 +9,9 @@ import { GrupoComponent } from './components/grupo/grupo.component';
 import { ReuniaoComponent } from './components/reuniao/reuniao.component';
 import { RelatoriosComponent } from './components/relatorios/relatorios.component';
 import { BlankComponent } from './shell/blank.component';
+import { onboardingCompleteGuard } from './guards/onboarding-complete.guard';
+import { appDefaultRedirectGuard } from './guards/app-default-redirect.guard';
+import { OnboardingComponent } from './onboarding/onboarding.component';
 
 export const routes: Routes = [
   {
@@ -22,14 +25,37 @@ export const routes: Routes = [
     canActivate: [guestGuard]
   },
   {
+    path: 'onboarding',
+    redirectTo: 'app/cadastro',
+    pathMatch: 'full'
+  },
+  {
     path: 'app',
     component: AppShellComponent,
     canActivate: [authGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'grupos' },
-      { path: 'grupos', component: GrupoComponent },
-      { path: 'reunioes', component: ReuniaoComponent },
-      { path: 'relatorios', component: RelatoriosComponent }
+      {
+        path: '',
+        pathMatch: 'full',
+        canActivate: [appDefaultRedirectGuard],
+        component: BlankComponent
+      },
+      { path: 'cadastro', component: OnboardingComponent },
+      {
+        path: 'grupos',
+        component: GrupoComponent,
+        canActivate: [onboardingCompleteGuard]
+      },
+      {
+        path: 'reunioes',
+        component: ReuniaoComponent,
+        canActivate: [onboardingCompleteGuard]
+      },
+      {
+        path: 'relatorios',
+        component: RelatoriosComponent,
+        canActivate: [onboardingCompleteGuard]
+      }
     ]
   },
   {

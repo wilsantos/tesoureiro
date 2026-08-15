@@ -1,0 +1,305 @@
+.cadastro-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.cadastro-panel h2 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+.intro {
+  margin: 0 0 24px;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 12px;
+}
+
+.section-encargos {
+  margin-bottom: 28px;
+}
+
+.section-grupos {
+  margin-bottom: 20px;
+}
+
+.data-grid {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+}
+
+.encargos-grid .grid-header,
+.encargos-grid .grid-row {
+  grid-template-columns: 1.2fr 2fr 1.5fr 110px;
+}
+
+.grupos-grid .grid-header,
+.grupos-grid .grid-row {
+  grid-template-columns: 1.2fr 2fr 100px 100px;
+}
+
+.grid-header,
+.grid-row {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+.grid-header {
+  background: #f5f5f5;
+  font-weight: 600;
+  font-size: 13px;
+  color: #555;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.grid-row {
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.grid-row:last-child {
+  border-bottom: none;
+}
+
+.col-csa {
+  color: #666;
+  font-size: 13px;
+}
+
+.col-grupo {
+  font-weight: 500;
+  color: #333;
+}
+
+.col-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.col-check {
+  text-align: center;
+}
+
+.col-action {
+  text-align: right;
+}
+
+.col-action .btn {
+  margin: 0;
+}
+
+.papel-tag {
+  background: #e8f4fc;
+  color: #2980b9;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.lista-vazia-inline {
+  padding: 16px;
+  text-align: center;
+  color: #888;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px dashed #ddd;
+  font-size: 14px;
+}
+
+.filtros {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.filtros-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+.busca-input {
+  display: flex;
+  gap: 8px;
+}
+
+.busca-input input {
+  flex: 1;
+}
+
+.filtro-hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #777;
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 13px;
+  margin: 0;
+}
+
+.loading {
+  color: #666;
+  padding: 16px 0;
+}
+
+.grupos-lista {
+  margin-bottom: 8px;
+}
+
+.lista-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.lista-count {
+  font-size: 13px;
+  color: #666;
+}
+
+.lista-vazia {
+  padding: 24px;
+  text-align: center;
+  color: #888;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px dashed #ddd;
+}
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+}
+
+.paginacao-info {
+  font-size: 13px;
+  color: #666;
+}
+
+.novos-grupos {
+  margin-bottom: 24px;
+}
+
+.novos-grupos ul {
+  list-style: none;
+  padding: 0;
+}
+
+.novos-grupos li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.papel-tags span {
+  background: #e8f4fc;
+  color: #2980b9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.success-message {
+  color: #27ae60;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.papeis-modal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.papeis-modal .label {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .encargos-grid .grid-header,
+  .encargos-grid .grid-row,
+  .grupos-grid .grid-header,
+  .grupos-grid .grid-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .grid-header {
+    display: none;
+  }
+
+  .grid-row {
+    padding: 12px;
+  }
+
+  .col-check,
+  .col-action {
+    text-align: left;
+  }
+
+  .filtros-row {
+    grid-template-columns: 1fr;
+  }
+}

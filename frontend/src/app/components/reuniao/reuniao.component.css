@@ -1,5 +1,49 @@
 /* Estilos específicos do componente de reuniões */
 
+.modal-reuniao .reuniao-cabecalho {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+}
+
+.modal-reuniao .reuniao-cabecalho-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-reuniao .reuniao-cabecalho-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.modal-reuniao .reuniao-cabecalho-valor {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.modal-reuniao .despesas-secao {
+  margin-top: 24px;
+  border-top: 2px solid #ddd;
+  padding-top: 20px;
+}
+
+.modal-reuniao .despesas-secao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 /* Remover width dos checkboxes */
 input[type="checkbox"] {
   width: auto !important;
@@ -148,6 +192,19 @@ input[type="checkbox"] {
   .form-row {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
+  }
+
+  .modal-reuniao .reuniao-cabecalho {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-reuniao .despesas-secao-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-reuniao .despesas-secao-header .btn {
+    width: 100%;
   }
 
   /* Novos Membros - 2 por linha no mobile */

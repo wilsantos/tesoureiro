@@ -25,6 +25,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         auth.logout();
         router.navigate(['/login']);
       }
+
+      if (error.status === 403 && error.error?.error === 'onboarding_required') {
+        auth.carregarUsuarioAtual().subscribe({
+          next: () => router.navigate(['/app/cadastro']),
+          error: () => router.navigate(['/login'])
+        });
+      }
+
       return throwError(() => error);
     })
   );

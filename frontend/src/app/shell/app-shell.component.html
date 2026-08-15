@@ -9,10 +9,32 @@
     </div>
   </div>
 
-  <div class="nav-tabs">
-    <a routerLink="/app/grupos" routerLinkActive="active" class="nav-tab">Grupos</a>
-    <a routerLink="/app/reunioes" routerLinkActive="active" class="nav-tab">Reuniões</a>
-    <a routerLink="/app/relatorios" routerLinkActive="active" class="nav-tab">Relatórios</a>
+  <div class="nav-tabs" *ngIf="onboardingComplete$ | async as onboardingComplete">
+    <a routerLink="/app/cadastro" routerLinkActive="active" class="nav-tab">Cadastro</a>
+
+    <a
+      *ngIf="onboardingComplete"
+      routerLink="/app/grupos"
+      routerLinkActive="active"
+      class="nav-tab"
+    >Grupos</a>
+    <span *ngIf="!onboardingComplete" class="nav-tab disabled" title="Complete o cadastro para acessar">Grupos</span>
+
+    <a
+      *ngIf="onboardingComplete"
+      routerLink="/app/reunioes"
+      routerLinkActive="active"
+      class="nav-tab"
+    >Reuniões</a>
+    <span *ngIf="!onboardingComplete" class="nav-tab disabled" title="Complete o cadastro para acessar">Reuniões</span>
+
+    <a
+      *ngIf="onboardingComplete"
+      routerLink="/app/relatorios"
+      routerLinkActive="active"
+      class="nav-tab"
+    >Relatórios</a>
+    <span *ngIf="!onboardingComplete" class="nav-tab disabled" title="Complete o cadastro para acessar">Relatórios</span>
   </div>
 
   <router-outlet></router-outlet>

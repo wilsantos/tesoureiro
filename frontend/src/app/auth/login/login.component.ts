@@ -53,7 +53,7 @@ export class LoginComponent implements AfterViewInit {
     this.auth.login(email!, senha!).subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.router.navigate(['/app/grupos']);
+        this.auth.navigateAfterAuth();
       },
       error: (err) => {
         this.isSubmitting = false;
@@ -117,7 +117,7 @@ export class LoginComponent implements AfterViewInit {
     this.auth.loginGoogle(credential).subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.router.navigate(['/app/grupos']);
+        this.auth.navigateAfterAuth();
       },
       error: (err) => {
         this.isSubmitting = false;

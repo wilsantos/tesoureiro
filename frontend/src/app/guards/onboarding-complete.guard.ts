@@ -3,7 +3,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-export const rootRedirectGuard: CanActivateFn = () => {
+export const onboardingCompleteGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
@@ -11,9 +11,9 @@ export const rootRedirectGuard: CanActivateFn = () => {
     return router.createUrlTree(['/login']);
   }
 
-  const decide = (): ReturnType<Router['createUrlTree']> => {
+  const decide = (): boolean | ReturnType<Router['createUrlTree']> => {
     if (auth.isOnboardingComplete()) {
-      return router.createUrlTree(['/app/grupos']);
+      return true;
     }
 
     return router.createUrlTree(['/app/cadastro']);

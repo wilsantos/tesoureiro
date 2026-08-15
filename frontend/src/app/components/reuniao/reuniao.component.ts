@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
+import { PapelGrupo } from '../../models/usuario.model';
+
+type AbaReuniao = 'secretaria' | 'tesouraria';
 
 @Component({
   selector: 'app-reuniao',
@@ -50,11 +54,16 @@ export class ReuniaoComponent implements OnInit {
   isEditDespesa: boolean = false;
   valorDespesaInput: string = '';
   filtroGrupo: number | null = null;
-  filtroMes: number | null = null;
-  filtroAno: number | null = null;
+  filtroMes: number = new Date().getMonth() + 1;
+  filtroAnoInput: string = String(new Date().getFullYear());
+  filtroAno: number = new Date().getFullYear();
   filtrosPreenchidos: boolean = false;
+  abaAtiva: AbaReuniao = 'secretaria';
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService
+  ) {}
 
   grupoSelecionado: boolean = false;
   nomeGrupoSelecionado: string = '';
@@ -81,7 +90,7 @@ export class ReuniaoComponent implements OnInit {
 
   verificarFiltros() {
     // Verifica se grupo está selecionado e mês/ano estão preenchidos
-    const todosPreenchidos = this.filtroMes !== null && this.filtroAno !== null && this.filtroGrupo !== null;
+    const todosPreenchidos = this.filtroMes > 0 && this.filtroAno > 0 && this.filtroGrupo !== null;
     
     if (todosPreenchidos) {
       // Todos os filtros preenchidos - carregar reuniões
@@ -98,6 +107,10 @@ export class ReuniaoComponent implements OnInit {
     this.apiService.getGrupos().subscribe({
       next: (data) => {
         this.grupos = data;
+        if (this.grupos.length === 1) {
+          this.filtroGrupo = this.grupos[0].Id;
+          this.selecionarGrupo();
+        }
       },
       error: (error) => {
         console.error('Erro ao carregar grupos:', error);
@@ -173,6 +186,13 @@ export class ReuniaoComponent implements OnInit {
     this.verificarFiltros();
   }
 
+  onAnoInputChange(): void {
+    this.filtroAnoInput = this.filtroAnoInput.replace(/\D/g, '').slice(0, 4);
+    const ano = parseInt(this.filtroAnoInput, 10);
+    this.filtroAno = this.filtroAnoInput.length === 4 && !isNaN(ano) ? ano : 0;
+    this.onFiltroChange();
+  }
+
   getMeses(): { valor: number, nome: string }[] {
     return [
       { valor: 1, nome: 'Janeiro' },
@@ -190,14 +210,45 @@ export class ReuniaoComponent implements OnInit {
     ];
   }
 
-  getAnos(): number[] {
-    const anos: number[] = [];
-    const anoAtual = new Date().getFullYear();
-    // Gerar anos dos últimos 10 anos até 2 anos no futuro
-    for (let i = anoAtual - 10; i <= anoAtual + 2; i++) {
-      anos.push(i);
+  temEncargo(grupoId: number | null, papel: PapelGrupo): boolean {
+    if (!grupoId) {
+      return false;
     }
-    return anos.sort((a, b) => b - a); // Ordenar do mais recente para o mais antigo
+
+    const id = Number(grupoId);
+    const grupos = this.authService.getUsuario()?.Grupos ?? [];
+    return grupos.some(
+      (vinculo) => vinculo.GrupoId === id && vinculo.Papel === papel && vinculo.Ativo !== false
+    );
+  }
+
+  podeAcessarSecretaria(): boolean {
+    return this.temEncargo(this.reuniao.IdGrupo, 'secretaria');
+  }
+
+  podeAcessarTesouraria(): boolean {
+    return this.temEncargo(this.reuniao.IdGrupo, 'tesouraria');
+  }
+
+  selecionarAba(aba: AbaReuniao): void {
+    if (aba === 'secretaria' && !this.podeAcessarSecretaria()) {
+      return;
+    }
+    if (aba === 'tesouraria' && !this.podeAcessarTesouraria()) {
+      return;
+    }
+    this.abaAtiva = aba;
+  }
+
+  private definirAbaInicial(): void {
+    const temSecretaria = this.podeAcessarSecretaria();
+    const temTesouraria = this.podeAcessarTesouraria();
+
+    if (temSecretaria) {
+      this.abaAtiva = 'secretaria';
+    } else if (temTesouraria) {
+      this.abaAtiva = 'tesouraria';
+    }
   }
 
   openModal(editReuniao?: any) {
@@ -230,11 +281,13 @@ export class ReuniaoComponent implements OnInit {
       this.despesas = [];
       this.isEdit = false;
     }
+    this.definirAbaInicial();
     this.showModal = true;
   }
 
   closeModal() {
     this.showModal = false;
+    this.abaAtiva = 'secretaria';
     this.reuniao = {
       Id: null,
       IdGrupo: null,

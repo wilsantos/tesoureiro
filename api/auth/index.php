@@ -168,6 +168,7 @@ switch ($method) {
 
                 $resposta = emitirRespostaAutenticada($usuario);
                 $resposta['message'] = 'Usuário criado';
+                atualizarUltimoAcesso($conn, (int) $usuario['Id']);
                 responderAuth(201, $resposta);
             } catch (PDOException $e) {
                 if ((int) ($e->errorInfo[0] ?? 0) === 23505) {
@@ -210,6 +211,8 @@ switch ($method) {
 
             $stmt = $conn->prepare('UPDATE usuario SET "AtualizadoEm" = NOW() WHERE "Id" = ?');
             $stmt->execute([$usuario['Id']]);
+
+            atualizarUltimoAcesso($conn, (int) $usuario['Id']);
 
             responderAuth(200, emitirRespostaAutenticada($usuario));
         }
@@ -293,7 +296,219 @@ switch ($method) {
                 }
             }
 
+            atualizarUltimoAcesso($conn, (int) $usuario['Id']);
+
             responderAuth(200, emitirRespostaAutenticada($usuario));
+        }
+
+        if ($action === 'onboarding') {
+            $authUser = requireAuth();
+            $usuarioId = (int) $authUser['Id'];
+            $data = lerJsonBody();
+
+            $vinculos = isset($data['Vinculos']) && is_array($data['Vinculos']) ? $data['Vinculos'] : [];
+            $novosGrupos = isset($data['NovosGrupos']) && is_array($data['NovosGrupos']) ? $data['NovosGrupos'] : [];
+
+            if (count($vinculos) === 0 && count($novosGrupos) === 0) {
+                responderAuth(400, ['message' => 'Informe ao menos um grupo e papel']);
+            }
+
+            $vinculosProcessar = [];
+            $chaveVinculo = [];
+
+            foreach ($vinculos as $item) {
+                if (!is_array($item) || !isset($item['GrupoId']) || !isset($item['Papel'])) {
+                    responderAuth(400, ['message' => 'Vínculo inválido: GrupoId e Papel obrigatórios']);
+                }
+
+                $grupoId = (int) $item['GrupoId'];
+                $papel = validarPapel((string) $item['Papel']);
+
+                if ($grupoId <= 0 || $papel === null) {
+                    responderAuth(400, ['message' => 'GrupoId ou Papel inválido']);
+                }
+
+                $chave = $grupoId . ':' . $papel;
+                if (isset($chaveVinculo[$chave])) {
+                    responderAuth(400, ['message' => 'Vínculo duplicado no request']);
+                }
+
+                $chaveVinculo[$chave] = true;
+                $vinculosProcessar[] = ['GrupoId' => $grupoId, 'Papel' => $papel];
+            }
+
+            foreach ($novosGrupos as $item) {
+                if (!is_array($item)) {
+                    responderAuth(400, ['message' => 'Novo grupo inválido']);
+                }
+
+                $nome = isset($item['Nome']) ? trim((string) $item['Nome']) : '';
+                $endereco = isset($item['Endereco']) ? trim((string) $item['Endereco']) : '';
+                $csa = isset($item['CSA']) ? (int) $item['CSA'] : 0;
+
+                if ($nome === '' || $endereco === '' || $csa <= 0) {
+                    responderAuth(400, ['message' => 'Novos grupos exigem Nome, Endereco e CSA']);
+                }
+
+                $papeis = [];
+                if (isset($item['Papeis']) && is_array($item['Papeis'])) {
+                    foreach ($item['Papeis'] as $p) {
+                        $normalizado = validarPapel((string) $p);
+                        if ($normalizado !== null) {
+                            $papeis[] = $normalizado;
+                        }
+                    }
+                }
+                if (isset($item['Papel'])) {
+                    $normalizado = validarPapel((string) $item['Papel']);
+                    if ($normalizado !== null) {
+                        $papeis[] = $normalizado;
+                    }
+                }
+
+                $papeis = array_values(array_unique($papeis));
+
+                if (count($papeis) === 0) {
+                    responderAuth(400, ['message' => 'Informe ao menos um papel para cada novo grupo']);
+                }
+
+                $vinculosProcessar[] = [
+                    'NovoGrupo' => true,
+                    'Nome' => $nome,
+                    'Endereco' => $endereco,
+                    'CSA' => $csa,
+                    'Papeis' => $papeis,
+                ];
+            }
+
+            try {
+                $conn->beginTransaction();
+
+                foreach ($vinculosProcessar as $vinculo) {
+                    if (isset($vinculo['NovoGrupo'])) {
+                        $stmtGrupo = $conn->prepare(
+                            'INSERT INTO grupo ("Nome", "Endereco", "CSA", "Saldo", "DataSaldo")
+                             VALUES (?, ?, ?, 0, NULL)
+                             RETURNING "Id"'
+                        );
+                        try {
+                            $stmtGrupo->execute([
+                                $vinculo['Nome'],
+                                $vinculo['Endereco'],
+                                $vinculo['CSA'],
+                            ]);
+                        } catch (PDOException $e) {
+                            if ((int) ($e->errorInfo[0] ?? 0) === 23505) {
+                                $conn->rollBack();
+                                responderAuth(409, [
+                                    'message' => 'Já existe um grupo com este nome nesta CSA',
+                                    'error' => 'grupo_duplicado',
+                                ]);
+                            }
+
+                            throw $e;
+                        }
+
+                        $grupoId = (int) $stmtGrupo->fetchColumn();
+
+                        foreach ($vinculo['Papeis'] as $papel) {
+                            resolverEncargoGrupo($conn, $usuarioId, $grupoId, $papel);
+                        }
+                    } else {
+                        $stmtExiste = $conn->prepare('SELECT "Id" FROM grupo WHERE "Id" = ? LIMIT 1');
+                        $stmtExiste->execute([$vinculo['GrupoId']]);
+                        if (!$stmtExiste->fetch()) {
+                            $conn->rollBack();
+                            responderAuth(400, ['message' => 'Grupo não encontrado', 'GrupoId' => $vinculo['GrupoId']]);
+                        }
+
+                        resolverEncargoGrupo(
+                            $conn,
+                            $usuarioId,
+                            $vinculo['GrupoId'],
+                            $vinculo['Papel']
+                        );
+                    }
+                }
+
+                $conn->commit();
+            } catch (EncargoPreenchidoException $e) {
+                if ($conn->inTransaction()) {
+                    $conn->rollBack();
+                }
+
+                responderAuth(409, [
+                    'message' => $e->getMessage(),
+                    'error' => 'encargo_preenchido',
+                    'GrupoId' => $e->grupoId,
+                    'Papel' => $e->papel,
+                    'UsuarioAtivo' => $e->usuarioAtivo,
+                ]);
+            } catch (PDOException $e) {
+                if ($conn->inTransaction()) {
+                    $conn->rollBack();
+                }
+
+                error_log('Auth onboarding PDO Error: ' . $e->getMessage());
+                responderAuth(500, [
+                    'message' => 'Erro ao completar onboarding',
+                    'error' => $e->getMessage(),
+                ]);
+            } catch (Exception $e) {
+                if ($conn->inTransaction()) {
+                    $conn->rollBack();
+                }
+
+                error_log('Auth onboarding Error: ' . $e->getMessage());
+                responderAuth(500, [
+                    'message' => 'Erro ao completar onboarding',
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $stmtUsuario = $conn->prepare(
+                'SELECT "Id", "Nome", "Email" FROM usuario WHERE "Id" = ? LIMIT 1'
+            );
+            $stmtUsuario->execute([$usuarioId]);
+            $usuarioRow = $stmtUsuario->fetch();
+
+            responderAuth(201, [
+                'message' => 'Onboarding completado',
+                'OnboardingCompleto' => true,
+                'Grupos' => listarGruposUsuario($conn, $usuarioId),
+                'usuario' => montarUsuarioMe($conn, $usuarioRow),
+            ]);
+        }
+
+        if ($action === 'encerrar-encargo') {
+            $authUser = requireAuth();
+            $usuarioId = (int) $authUser['Id'];
+            $data = lerJsonBody();
+            $grupoId = isset($data['GrupoId']) ? (int) $data['GrupoId'] : 0;
+
+            if ($grupoId <= 0) {
+                responderAuth(400, ['message' => 'GrupoId inválido']);
+            }
+
+            $stmtGrupo = $conn->prepare('SELECT "Id" FROM grupo WHERE "Id" = ? LIMIT 1');
+            $stmtGrupo->execute([$grupoId]);
+            if (!$stmtGrupo->fetch()) {
+                responderAuth(400, ['message' => 'Grupo não encontrado']);
+            }
+
+            $encerrados = encerrarEncargosGrupo($conn, $usuarioId, $grupoId);
+
+            $stmtUsuario = $conn->prepare(
+                'SELECT "Id", "Nome", "Email" FROM usuario WHERE "Id" = ? LIMIT 1'
+            );
+            $stmtUsuario->execute([$usuarioId]);
+            $usuarioRow = $stmtUsuario->fetch();
+
+            responderAuth(200, [
+                'message' => $encerrados > 0 ? 'Encargos encerrados' : 'Nenhum encargo ativo para este grupo',
+                'Encerrados' => $encerrados,
+                'usuario' => montarUsuarioMe($conn, $usuarioRow),
+            ]);
         }
 
         if ($action === 'logout') {
@@ -306,16 +521,21 @@ switch ($method) {
     case 'GET':
         if ($action === 'me') {
             $authUser = requireAuth();
+            $usuarioId = (int) $authUser['Id'];
 
-            $stmt = $conn->prepare('SELECT "Id", "Nome", "Email" FROM usuario WHERE "Id" = ? LIMIT 1');
-            $stmt->execute([$authUser['Id']]);
+            $stmt = $conn->prepare(
+                'SELECT "Id", "Nome", "Email" FROM usuario WHERE "Id" = ? LIMIT 1'
+            );
+            $stmt->execute([$usuarioId]);
             $usuario = $stmt->fetch();
 
             if (!$usuario) {
                 responderAuth(401, ['message' => 'Não autorizado']);
             }
 
-            responderAuth(200, usuarioPublico($usuario));
+            atualizarUltimoAcesso($conn, $usuarioId);
+
+            responderAuth(200, montarUsuarioMe($conn, $usuario));
         }
 
         responderAuth(404, ['message' => 'Endpoint não encontrado']);

@@ -3,13 +3,9 @@ import { CanActivateFn, Router } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-export const rootRedirectGuard: CanActivateFn = () => {
+export const appDefaultRedirectGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
-
-  if (!auth.isAuthenticated()) {
-    return router.createUrlTree(['/login']);
-  }
 
   const decide = (): ReturnType<Router['createUrlTree']> => {
     if (auth.isOnboardingComplete()) {
@@ -18,6 +14,10 @@ export const rootRedirectGuard: CanActivateFn = () => {
 
     return router.createUrlTree(['/app/cadastro']);
   };
+
+  if (!auth.isAuthenticated()) {
+    return router.createUrlTree(['/login']);
+  }
 
   const usuario = auth.getUsuario();
   if (usuario?.OnboardingCompleto !== undefined) {

@@ -31,13 +31,18 @@ try {
     exit;
 }
 
+if ($method === 'PUT' || $method === 'DELETE') {
+    requireOnboardingComplete($conn, $usuario['Id']);
+}
+
 switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {
-            // Buscar grupo específico
-            $id = $_GET['id'];
+            $id = (int) $_GET['id'];
+            requireAcessoGrupo($conn, $usuario['Id'], $id);
+
             $stmt = $conn->prepare("SELECT 
-                grupo.*, csa.\"Nome\" as CSA_Nome FROM grupo INNER JOIN csa ON grupo.\"CSA\" = csa.\"Id\" 
+                grupo.*, csa.\"Nome\" AS \"CSA_Nome\" FROM grupo INNER JOIN csa ON grupo.\"CSA\" = csa.\"Id\" 
                 WHERE grupo.\"Id\" = ?");
             $stmt->execute([$id]);
             $grupo = $stmt->fetch();
@@ -49,12 +54,65 @@ switch ($method) {
                 echo json_encode(['message' => 'Grupo não encontrado'], JSON_UNESCAPED_UNICODE);
             }
         } else {
-            // Listar todos os grupos
-            $stmt = $conn->query("SELECT 
-                grupo.*, csa.\"Nome\" as CSA_Nome FROM grupo INNER JOIN csa ON grupo.\"CSA\" = csa.\"Id\" 
-                ORDER BY grupo.\"Nome\"");
-            $grupos = $stmt->fetchAll();
-            echo json_encode($grupos, JSON_UNESCAPED_UNICODE);
+            $csa = isset($_GET['CSA']) ? (int) $_GET['CSA'] : 0;
+            $busca = isset($_GET['busca']) ? trim((string) $_GET['busca']) : '';
+            $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 0;
+            $offset = isset($_GET['offset']) ? max(0, (int) $_GET['offset']) : 0;
+            $disponiveis = isset($_GET['disponiveis']) && $_GET['disponiveis'] !== '0' && $_GET['disponiveis'] !== 'false';
+
+            $sqlBase = 'FROM grupo INNER JOIN csa ON grupo."CSA" = csa."Id"';
+            $conditions = [];
+            $params = [];
+
+            if (!$disponiveis) {
+                $conditions[] = 'EXISTS (
+                    SELECT 1 FROM usuario_grupo ug
+                    WHERE ug."Grupo" = grupo."Id"
+                      AND ug."Usuario" = ?
+                      AND ug."Ativo" = true
+                )';
+                $params[] = $usuario['Id'];
+            }
+
+            if ($csa > 0) {
+                $conditions[] = 'grupo."CSA" = ?';
+                $params[] = $csa;
+            }
+
+            if ($busca !== '') {
+                $conditions[] = 'LOWER(grupo."Nome") LIKE LOWER(?)';
+                $params[] = '%' . $busca . '%';
+            }
+
+            $where = count($conditions) > 0 ? ' WHERE ' . implode(' AND ', $conditions) : '';
+
+            if ($limit > 0) {
+                $countSql = 'SELECT COUNT(*) ' . $sqlBase . $where;
+                $countStmt = $conn->prepare($countSql);
+                $countStmt->execute($params);
+                $total = (int) $countStmt->fetchColumn();
+
+                $listSql = 'SELECT grupo.*, csa."Nome" AS "CSA_Nome" ' . $sqlBase . $where
+                    . ' ORDER BY grupo."Nome" LIMIT ? OFFSET ?';
+                $listParams = array_merge($params, [$limit, $offset]);
+                $stmt = $conn->prepare($listSql);
+                $stmt->execute($listParams);
+                $grupos = $stmt->fetchAll();
+
+                echo json_encode([
+                    'items' => $grupos,
+                    'total' => $total,
+                    'limit' => $limit,
+                    'offset' => $offset,
+                ], JSON_UNESCAPED_UNICODE);
+            } else {
+                $listSql = 'SELECT grupo.*, csa."Nome" AS "CSA_Nome" ' . $sqlBase . $where
+                    . ' ORDER BY grupo."Nome"';
+                $stmt = $conn->prepare($listSql);
+                $stmt->execute($params);
+                $grupos = $stmt->fetchAll();
+                echo json_encode($grupos, JSON_UNESCAPED_UNICODE);
+            }
         }
         break;
 
@@ -105,6 +163,8 @@ switch ($method) {
             break;
         }
 
+        requireAcessoGrupo($conn, $usuario['Id'], (int) $data['Id']);
+
         // Saldo e DataSaldo são opcionais, usar valores padrão se não fornecidos
         $saldo = isset($data['Saldo']) ? $data['Saldo'] : 0;
         $dataSaldo = isset($data['DataSaldo']) && $data['DataSaldo'] !== '' ? $data['DataSaldo'] : null;
@@ -125,7 +185,9 @@ switch ($method) {
             break;
         }
 
-        $id = $_GET['id'];
+        $id = (int) $_GET['id'];
+        requireAcessoGrupo($conn, $usuario['Id'], $id);
+
         $stmt = $conn->prepare("DELETE FROM grupo WHERE \"Id\" = ?");
         if ($stmt->execute([$id])) {
             echo json_encode(['message' => 'Grupo deletado com sucesso'], JSON_UNESCAPED_UNICODE);

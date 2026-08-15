@@ -31,6 +31,8 @@ try {
     exit;
 }
 
+requireOnboardingComplete($conn, $usuario['Id']);
+
 switch ($method) {
     case 'GET':
         // Verificar se é o endpoint de saldo acumulado (não precisa de mes/ano)
@@ -41,9 +43,11 @@ switch ($method) {
                 break;
             }
             
-            $idGrupo = $_GET['IdGrupo'];
+            $idGrupo = (int) $_GET['IdGrupo'];
             $mes = $_GET['mes'];
             $ano = $_GET['ano'];
+
+            requireAcessoGrupo($conn, $usuario['Id'], $idGrupo);
             
             try {
                 // Buscar dados do grupo (Saldo inicial e DataSaldo)
@@ -187,9 +191,11 @@ switch ($method) {
         }
 
         $tipo = $_GET['tipo'];
-        $idGrupo = $_GET['IdGrupo'];
+        $idGrupo = (int) $_GET['IdGrupo'];
         $mes = $_GET['mes'];
         $ano = $_GET['ano'];
+
+        requireAcessoGrupo($conn, $usuario['Id'], $idGrupo);
 
         try {
             if ($tipo === 'geral') {

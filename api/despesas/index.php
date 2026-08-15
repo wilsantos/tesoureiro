@@ -43,6 +43,8 @@ try {
     exit;
 }
 
+requireOnboardingComplete($conn, $usuario['Id']);
+
 switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {

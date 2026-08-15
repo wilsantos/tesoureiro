@@ -206,6 +206,13 @@ tr:hover {
   color: #3498db;
 }
 
+.nav-tab:disabled,
+.nav-tab.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Melhorias para Mobile */
 @media (max-width: 768px) {
   body {

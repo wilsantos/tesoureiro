@@ -62,7 +62,7 @@ export class CadastroComponent {
     this.auth.cadastrar(nome!, email!, senha!).subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.router.navigate(['/app/grupos']);
+        this.auth.navigateAfterAuth();
       },
       error: (err) => {
         this.isSubmitting = false;

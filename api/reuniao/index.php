@@ -31,16 +31,18 @@ try {
     exit;
 }
 
+requireOnboardingComplete($conn, $usuario['Id']);
+
 switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {
-            // Buscar reunião específica
-            $id = $_GET['id'];
+            $id = (int) $_GET['id'];
             $stmt = $conn->prepare("SELECT * FROM reuniao WHERE \"Id\" = ?");
             $stmt->execute([$id]);
             $reuniao = $stmt->fetch();
             
             if ($reuniao) {
+                requireAcessoGrupo($conn, $usuario['Id'], (int) $reuniao['IdGrupo']);
                 echo json_encode($reuniao, JSON_UNESCAPED_UNICODE);
             } else {
                 http_response_code(404);
@@ -50,11 +52,21 @@ switch ($method) {
             // Construir query com filtros
             $where = [];
             $params = [];
+
+            $where[] = 'EXISTS (
+                SELECT 1 FROM usuario_grupo ug
+                WHERE ug."Grupo" = r."IdGrupo"
+                  AND ug."Usuario" = ?
+                  AND ug."Ativo" = true
+            )';
+            $params[] = $usuario['Id'];
             
             // Filtro por grupo
             if (isset($_GET['IdGrupo']) && $_GET['IdGrupo'] !== '' && $_GET['IdGrupo'] !== null) {
+                $idGrupo = (int) $_GET['IdGrupo'];
+                requireAcessoGrupo($conn, $usuario['Id'], $idGrupo);
                 $where[] = "r.\"IdGrupo\" = ?";
-                $params[] = $_GET['IdGrupo'];
+                $params[] = $idGrupo;
             }
             
             // Filtro por mês
@@ -114,6 +126,8 @@ switch ($method) {
             break;
         }
 
+        requireAcessoGrupo($conn, $usuario['Id'], (int) $data['IdGrupo']);
+
         try {
             $stmt = $conn->prepare("INSERT INTO reuniao (\"IdGrupo\", \"Data\", \"Membros\", \"Visitantes\", \"ValorSetima\", \"ValorSetimaPix\", 
                                   \"VendaLiteratura\", \"Ingresso\", \"TrintaDias\", \"SessentaDias\", \"NoventaDias\", \"SeisMeses\", 
@@ -163,6 +177,8 @@ switch ($method) {
             }
         }
 
+        requireAcessoGrupo($conn, $usuario['Id'], (int) $data['IdGrupo']);
+
         $stmt = $conn->prepare("UPDATE reuniao SET \"IdGrupo\" = ?, \"Data\" = ?, \"Membros\" = ?, \"Visitantes\" = ?, 
                               \"ValorSetima\" = ?, \"ValorSetimaPix\" = ?, \"VendaLiteratura\" = ?, \"Ingresso\" = ?, 
                               \"TrintaDias\" = ?, \"SessentaDias\" = ?, \"NoventaDias\" = ?, \"SeisMeses\" = ?, 
@@ -189,7 +205,19 @@ switch ($method) {
             break;
         }
 
-        $id = $_GET['id'];
+        $id = (int) $_GET['id'];
+        $stmt = $conn->prepare("SELECT \"IdGrupo\" FROM reuniao WHERE \"Id\" = ?");
+        $stmt->execute([$id]);
+        $reuniao = $stmt->fetch();
+
+        if (!$reuniao) {
+            http_response_code(404);
+            echo json_encode(['message' => 'Reunião não encontrada'], JSON_UNESCAPED_UNICODE);
+            break;
+        }
+
+        requireAcessoGrupo($conn, $usuario['Id'], (int) $reuniao['IdGrupo']);
+
         $stmt = $conn->prepare("DELETE FROM reuniao WHERE \"Id\" = ?");
         if ($stmt->execute([$id])) {
             echo json_encode(['message' => 'Reunião deletada com sucesso'], JSON_UNESCAPED_UNICODE);
