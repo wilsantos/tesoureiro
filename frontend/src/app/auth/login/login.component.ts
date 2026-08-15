@@ -23,6 +23,7 @@ export class LoginComponent implements AfterViewInit {
   readonly googleClientId = environment.googleClientId;
   errorMessage = '';
   isSubmitting = false;
+  showSenha = false;
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],

@@ -123,13 +123,13 @@ Outros métodos retornam `405`.
 
 | Cenário | URL | Observação |
 |---------|-----|------------|
-| Todas | `GET /api/despesas/` | Sem `Comprovante` |
-| Por reunião | `GET /api/despesas/?IdReuniao={id}` | Sem `Comprovante` |
-| Por ID | `GET /api/despesas/?id={id}` | Inclui `Comprovante` em Base64 |
+| Todas | `GET /api/despesas/` | Listagem padrão |
+| Por reunião | `GET /api/despesas/?IdReuniao={id}` | Despesas de uma reunião |
+| Por ID | `GET /api/despesas/?id={id}` | Mesmos campos da listagem |
 
-**Campos retornados (listagem):** `Id`, `IdReuniao`, `Descricao`, `ValorDespesa`, `repasse`, `compra_literatura` (booleanos)
+**Campos retornados:** `Id`, `IdReuniao`, `Descricao`, `ValorDespesa`, `repasse`, `compra_literatura` (booleanos)
 
-**Campos retornados (por id):** acima + `Comprovante` (Base64)
+> Comprovantes fora do escopo da v1 — ver [ADR](../../docs/decisoes/20260815-comprovantes-fora-escopo-v1.md).
 
 ### POST — Criar
 
@@ -140,7 +140,6 @@ Outros métodos retornam `405`.
 | `ValorDespesa` | sim | number | — |
 | `repasse` | não | boolean | `false` |
 | `compra_literatura` | não | boolean | `false` |
-| `Comprovante` | não | string Base64 | `null` |
 
 **Resposta:** `201` com `{ "message": "Despesa criada com sucesso", "id": <id> }`
 
@@ -154,7 +153,6 @@ Outros métodos retornam `405`.
 | `ValorDespesa` | sim |
 | `repasse` | não (default `false`) |
 | `compra_literatura` | não (default `false`) |
-| `Comprovante` | não — se enviado e não vazio, substitui o arquivo |
 
 ### DELETE — Excluir
 

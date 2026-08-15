@@ -17,7 +17,29 @@
 
       <div class="form-group">
         <label for="senha">Senha *</label>
-        <input id="senha" type="password" formControlName="senha" autocomplete="current-password" />
+        <div class="relative">
+          <input
+            id="senha"
+            class="pr-11"
+            [type]="showSenha ? 'text' : 'password'"
+            formControlName="senha"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="absolute top-1/2 right-2 -translate-y-1/2 flex items-center justify-center w-8 h-8 p-0 border-0 rounded bg-transparent text-brand/60 cursor-pointer hover:text-brand hover:bg-surface-muted"
+            (click)="showSenha = !showSenha"
+            [attr.aria-label]="showSenha ? 'Ocultar senha' : 'Mostrar senha'"
+            [attr.aria-pressed]="showSenha"
+          >
+            <svg *ngIf="!showSenha" class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
+            </svg>
+            <svg *ngIf="showSenha" class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 7a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5zm8.94 5a11.9 11.9 0 0 1-2.64 3.54l1.42 1.42A14 14 0 0 0 23 12c-1.73-3.89-6-7-11-7a12.7 12.7 0 0 0-2.64.28l1.56 1.56A9.9 9.9 0 0 1 12 5c3.87 0 7.26 2.08 8.94 5zM3.06 7l1.42 1.42A11.9 11.9 0 0 0 1 12c1.73 3.89 6 7 11 7a12.7 12.7 0 0 0 2.64-.28l1.56-1.56A9.9 9.9 0 0 1 12 19c-3.87 0-7.26-2.08-8.94-5L3.06 7z"/>
+            </svg>
+          </button>
+        </div>
         <span class="field-error" *ngIf="form.controls.senha.touched && form.controls.senha.hasError('required')">
           Informe a senha.
         </span>
@@ -35,11 +57,13 @@
 
     <div class="auth-divider">ou</div>
 
-    <div class="google-section" *ngIf="googleClientId; else googleMissing">
-      <div #googleButton class="google-button-host"></div>
+    <div class="flex justify-center" *ngIf="googleClientId; else googleMissing">
+      <div #googleButton class="min-h-[44px]"></div>
     </div>
     <ng-template #googleMissing>
-      <p class="google-hint">Configure GOOGLE_CLIENT_ID no environment para habilitar login com Google.</p>
+      <p class="text-sm text-brand/50 text-center m-0">
+        Configure GOOGLE_CLIENT_ID no environment para habilitar login com Google.
+      </p>
     </ng-template>
 
     <p class="auth-footer">

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Observable, of, throwError } from 'rxjs';
+import { finalize, switchMap } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { PapelGrupo } from '../../models/usuario.model';
@@ -45,11 +47,10 @@ export class ReuniaoComponent implements OnInit {
     Descricao: '',
     ValorDespesa: 0,
     repasse: false,
-    compra_literatura: false,
-    Comprovante: null
+    compra_literatura: false
   };
-  showModal: boolean = false;
-  showDespesaModal: boolean = false;
+  showFormulario: boolean = false;
+  showFormularioDespesa: boolean = false;
   isEdit: boolean = false;
   isEditDespesa: boolean = false;
   valorDespesaInput: string = '';
@@ -59,6 +60,7 @@ export class ReuniaoComponent implements OnInit {
   filtroAno: number = new Date().getFullYear();
   filtrosPreenchidos: boolean = false;
   abaAtiva: AbaReuniao = 'secretaria';
+  salvandoReuniao = false;
 
   constructor(
     private apiService: ApiService,
@@ -251,16 +253,15 @@ export class ReuniaoComponent implements OnInit {
     }
   }
 
-  openModal(editReuniao?: any) {
+  abrirFormulario(editReuniao?: any) {
     if (editReuniao) {
       this.reuniao = { ...editReuniao };
       this.isEdit = true;
       this.loadDespesas(this.reuniao.Id);
     } else {
-      // Nova reunião - grupo já vem preenchido do filtro
       this.reuniao = {
         Id: null,
-        IdGrupo: this.filtroGrupo, // Grupo já vem preenchido
+        IdGrupo: this.filtroGrupo,
         Data: new Date().toISOString().split('T')[0],
         Membros: 0,
         Visitantes: 0,
@@ -281,12 +282,19 @@ export class ReuniaoComponent implements OnInit {
       this.despesas = [];
       this.isEdit = false;
     }
+
+    this.fecharFormularioDespesa();
     this.definirAbaInicial();
-    this.showModal = true;
+    this.showFormulario = true;
+
+    setTimeout(() => {
+      document.getElementById('formulario-reuniao')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
-  closeModal() {
-    this.showModal = false;
+  fecharFormulario() {
+    this.showFormulario = false;
+    this.fecharFormularioDespesa();
     this.abaAtiva = 'secretaria';
     this.reuniao = {
       Id: null,
@@ -322,9 +330,9 @@ export class ReuniaoComponent implements OnInit {
     });
   }
 
-  openDespesaModal(editDespesa?: any) {
+  abrirFormularioDespesa(editDespesa?: any) {
     if (editDespesa) {
-      this.despesa = { 
+      this.despesa = {
         ...editDespesa,
         repasse: editDespesa.repasse || false,
         compra_literatura: editDespesa.compra_literatura || false
@@ -338,17 +346,16 @@ export class ReuniaoComponent implements OnInit {
         Descricao: '',
         ValorDespesa: 0,
         repasse: false,
-        compra_literatura: false,
-        Comprovante: null
+        compra_literatura: false
       };
       this.valorDespesaInput = '';
       this.isEditDespesa = false;
     }
-    this.showDespesaModal = true;
+    this.showFormularioDespesa = true;
   }
 
-  closeDespesaModal() {
-    this.showDespesaModal = false;
+  fecharFormularioDespesa() {
+    this.showFormularioDespesa = false;
     this.valorDespesaInput = '';
     this.despesa = {
       Id: null,
@@ -356,22 +363,8 @@ export class ReuniaoComponent implements OnInit {
       Descricao: '',
       ValorDespesa: 0,
       repasse: false,
-      compra_literatura: false,
-      Comprovante: null
+      compra_literatura: false
     };
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        // Converter para base64
-        const base64 = e.target.result.split(',')[1];
-        this.despesa.Comprovante = base64;
-      };
-      reader.readAsDataURL(file);
-    }
   }
 
   formatMonetaryInput(value: string | number | null | undefined): string {
@@ -422,6 +415,44 @@ export class ReuniaoComponent implements OnInit {
     return parseFloat(normalized) || 0;
   }
 
+  private montarReuniaoParaSalvar(): Record<string, unknown> {
+    return {
+      ...this.reuniao,
+      ValorSetima: parseFloat(this.reuniao.ValorSetima) || 0,
+      ValorSetimaPix: parseFloat(this.reuniao.ValorSetimaPix) || 0,
+      VendaLiteratura: parseFloat(this.reuniao.VendaLiteratura) || 0,
+      FatosRelevantes: this.reuniao.FatosRelevantes || ''
+    };
+  }
+
+  garantirReuniaoPersistida(): Observable<number> {
+    if (this.reuniao.Id) {
+      return of(this.reuniao.Id);
+    }
+
+    if (!this.reuniao.IdGrupo || !this.reuniao.Data) {
+      return throwError(() => new Error('Preencha grupo e data da reunião'));
+    }
+
+    this.salvandoReuniao = true;
+
+    return this.apiService.createReuniao(this.montarReuniaoParaSalvar()).pipe(
+      switchMap((response) => {
+        const idReuniao = response.id;
+        if (!idReuniao) {
+          return throwError(() => new Error('Erro ao criar reunião'));
+        }
+        this.reuniao.Id = idReuniao;
+        this.isEdit = true;
+        this.carregarDespesas();
+        return of(idReuniao);
+      }),
+      finalize(() => {
+        this.salvandoReuniao = false;
+      })
+    );
+  }
+
   saveDespesa() {
     const valorDespesa = this.parseMonetaryValue(this.valorDespesaInput);
 
@@ -430,26 +461,23 @@ export class ReuniaoComponent implements OnInit {
       return;
     }
 
-    if (!this.despesa.IdReuniao) {
-      alert('Salve a reunião primeiro antes de adicionar despesas');
-      return;
-    }
+    this.garantirReuniaoPersistida().pipe(
+      switchMap((idReuniao) => {
+        const despesaParaSalvar = {
+          ...this.despesa,
+          IdReuniao: idReuniao,
+          ValorDespesa: valorDespesa
+        };
 
-    const despesaParaSalvar = {
-      ...this.despesa,
-      ValorDespesa: valorDespesa
-    };
-
-    const operacao = this.isEditDespesa 
-      ? this.apiService.updateDespesa(despesaParaSalvar)
-      : this.apiService.createDespesa(despesaParaSalvar);
-
-    operacao.subscribe({
-      next: (response) => {
+        return this.isEditDespesa
+          ? this.apiService.updateDespesa(despesaParaSalvar)
+          : this.apiService.createDespesa(despesaParaSalvar);
+      })
+    ).subscribe({
+      next: () => {
         alert(this.isEditDespesa ? 'Despesa atualizada com sucesso!' : 'Despesa criada com sucesso!');
-        this.closeDespesaModal();
+        this.fecharFormularioDespesa();
         this.loadDespesas(this.reuniao.Id);
-        // Recarregar o mapa de despesas para atualizar o grid
         this.carregarDespesas();
       },
       error: (error) => {
@@ -483,34 +511,27 @@ export class ReuniaoComponent implements OnInit {
       return;
     }
 
-    const reuniaoParaSalvar = {
-      ...this.reuniao,
-      ValorSetima: parseFloat(this.reuniao.ValorSetima) || 0,
-      ValorSetimaPix: parseFloat(this.reuniao.ValorSetimaPix) || 0,
-      VendaLiteratura: parseFloat(this.reuniao.VendaLiteratura) || 0,
-      FatosRelevantes: this.reuniao.FatosRelevantes || ''
-    };
+    const reuniaoParaSalvar = this.montarReuniaoParaSalvar();
+    const jaPersistida = this.isEdit && this.reuniao.Id;
 
-    const operacao = this.isEdit 
+    const operacao = jaPersistida
       ? this.apiService.updateReuniao(reuniaoParaSalvar)
       : this.apiService.createReuniao(reuniaoParaSalvar);
 
     operacao.subscribe({
       next: (response) => {
-        console.log('Resposta da API:', response);
-        const idReuniao = this.isEdit ? this.reuniao.Id : response.id;
+        const idReuniao = jaPersistida ? this.reuniao.Id : response.id;
         if (idReuniao) {
           this.reuniao.Id = idReuniao;
           this.loadDespesas(idReuniao);
         }
-        alert(this.isEdit ? 'Reunião atualizada com sucesso!' : 'Reunião criada com sucesso!');
-        if (!this.isEdit) {
-          // Não fechar o modal se for criação, para permitir adicionar despesas
+        alert(jaPersistida ? 'Reunião atualizada com sucesso!' : 'Reunião criada com sucesso!');
+        if (!jaPersistida) {
           this.isEdit = true;
         } else {
-          this.closeModal();
+          this.fecharFormulario();
         }
-        this.aplicarFiltros(); // Recarregar com os filtros atuais
+        this.aplicarFiltros();
       },
       error: (error) => {
         console.error('Erro ao salvar reunião:', error);

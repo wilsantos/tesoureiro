@@ -1,29 +1,29 @@
-<div class="cadastro-panel">
-  <h2>Cadastro de grupos e encargos</h2>
-  <p class="intro">
+<div class="panel">
+  <h2 class="text-xl font-semibold mb-2">Cadastro de grupos e encargos</h2>
+  <p class="text-sm text-brand/70 mb-6 leading-relaxed">
     Gerencie seus encargos ativos e adicione novos vínculos por CSA ou busca por nome do grupo.
   </p>
 
-  <section class="section-encargos">
-    <h3 class="section-title">Seus encargos ativos</h3>
+  <section class="mb-7">
+    <h3 class="text-sm font-semibold text-brand mb-3">Seus encargos ativos</h3>
 
     <div class="data-grid encargos-grid" *ngIf="encargosAgrupados.length > 0">
       <div class="grid-header">
         <span>CSA</span>
         <span>Grupo</span>
         <span>Encargos</span>
-        <span class="col-action">Ação</span>
+        <span class="text-right">Ação</span>
       </div>
       <div class="grid-row" *ngFor="let encargo of encargosAgrupados">
-        <span class="col-csa">{{ encargo.CSA_Nome }}</span>
-        <span class="col-grupo">{{ encargo.Nome }}</span>
-        <span class="col-tags">
+        <span class="text-brand/60 text-xs">{{ encargo.CSA_Nome }}</span>
+        <span class="font-medium">{{ encargo.Nome }}</span>
+        <span class="flex gap-1.5 flex-wrap">
           <span class="papel-tag" *ngFor="let papel of encargo.Papeis">{{ labelPapel(papel) }}</span>
         </span>
-        <span class="col-action">
+        <span class="text-right">
           <button
             type="button"
-            class="btn btn-danger btn-sm"
+            class="btn btn-danger btn-sm m-0"
             [disabled]="encerrandoGrupoId === encargo.GrupoId"
             (click)="encerrarEncargos(encargo.GrupoId)"
           >
@@ -33,56 +33,57 @@
       </div>
     </div>
 
-    <p *ngIf="encargosAgrupados.length === 0" class="lista-vazia-inline">
+    <p *ngIf="encargosAgrupados.length === 0" class="p-4 text-center text-brand/50 bg-surface-muted rounded-md border border-dashed border-surface-border text-sm">
       Nenhum encargo ativo no momento.
     </p>
   </section>
 
-  <div class="novos-grupos" *ngIf="novosGrupos.length > 0">
-    <h3 class="section-title">Novos grupos a cadastrar</h3>
-    <ul>
-      <li *ngFor="let novo of novosGrupos; let i = index">
+  <div class="mb-6" *ngIf="novosGrupos.length > 0">
+    <h3 class="text-sm font-semibold text-brand mb-3">Novos grupos a cadastrar</h3>
+    <ul class="list-none p-0">
+      <li class="flex items-center gap-2 py-1.5 text-sm" *ngFor="let novo of novosGrupos; let i = index">
         {{ novo.Nome }}
-        <span class="papel-tags">
-          <span *ngIf="novo.secretaria">Secretaria</span>
-          <span *ngIf="novo.tesouraria">Tesouraria</span>
+        <span class="flex gap-1">
+          <span class="papel-tag" *ngIf="novo.secretaria">Secretaria</span>
+          <span class="papel-tag" *ngIf="novo.tesouraria">Tesouraria</span>
         </span>
         <button type="button" class="btn-link" (click)="removerNovoGrupo(i)">Remover</button>
       </li>
     </ul>
   </div>
 
-  <section class="section-grupos">
-    <h3 class="section-title">Adicionar encargos</h3>
+  <section class="mb-5">
+    <h3 class="text-sm font-semibold text-brand mb-3">Adicionar encargos</h3>
 
-    <div class="filtros" [formGroup]="filterForm">
-      <div class="filtros-row">
-        <div class="form-group filtro-csa">
+    <div class="mb-4 p-4 bg-surface-muted rounded-md border border-surface-border" [formGroup]="filterForm">
+      <div class="grid grid-cols-1 md:grid-cols-[minmax(200px,280px)_1fr] gap-4 items-end">
+        <div class="form-group mb-0">
           <label for="filtro-csa">CSA</label>
           <select id="filtro-csa" formControlName="csa">
             <option [ngValue]="0">Todas as CSAs</option>
             <option *ngFor="let csa of csas" [ngValue]="csa.Id">{{ csa.Nome }}</option>
           </select>
         </div>
-        <div class="form-group filtro-busca">
+        <div class="form-group mb-0">
           <label for="filtro-busca">Buscar grupo</label>
-          <div class="busca-input">
+          <div class="flex gap-2">
             <input
               id="filtro-busca"
+              class="flex-1"
               type="search"
               formControlName="busca"
               placeholder="Nome do grupo..."
             />
             <button
               type="button"
-              class="btn btn-secondary btn-sm"
+              class="btn btn-secondary btn-sm shrink-0"
               (click)="limparBusca()"
               [disabled]="!filterForm.value.busca"
             >Limpar</button>
           </div>
         </div>
       </div>
-      <p class="filtro-hint" *ngIf="!temFiltroGrupos">
+      <p class="text-xs text-brand/50 mt-2.5 mb-0" *ngIf="!temFiltroGrupos">
         Selecione uma CSA ou digite o nome do grupo para listar os resultados.
       </p>
     </div>
@@ -90,17 +91,17 @@
     <p class="success-message" *ngIf="successMessage">{{ successMessage }}</p>
     <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-    <div *ngIf="isLoadingCsas" class="loading">Carregando CSAs...</div>
-    <div *ngIf="temFiltroGrupos && isLoadingGrupos" class="loading">Carregando grupos...</div>
+    <div *ngIf="isLoadingCsas" class="text-brand/60 py-4">Carregando CSAs...</div>
+    <div *ngIf="temFiltroGrupos && isLoadingGrupos" class="text-brand/60 py-4">Carregando grupos...</div>
 
-    <div *ngIf="temFiltroGrupos && !isLoadingGrupos" class="grupos-lista">
-      <div class="lista-header">
-        <span class="lista-count" *ngIf="totalGrupos > 0">
+    <div *ngIf="temFiltroGrupos && !isLoadingGrupos" class="mb-2">
+      <div class="flex justify-end mb-2">
+        <span class="text-xs text-brand/60" *ngIf="totalGrupos > 0">
           {{ pageInicio }}–{{ pageFim }} de {{ totalGrupos }}
         </span>
       </div>
 
-      <div *ngIf="totalGrupos === 0" class="lista-vazia">
+      <div *ngIf="totalGrupos === 0" class="p-6 text-center text-brand/50 bg-surface-muted rounded-md border border-dashed border-surface-border">
         Nenhum grupo encontrado para os filtros selecionados.
       </div>
 
@@ -108,13 +109,13 @@
         <div class="grid-header">
           <span>CSA</span>
           <span>Grupo</span>
-          <span class="col-check">Secretaria</span>
-          <span class="col-check">Tesouraria</span>
+          <span class="text-center">Secretaria</span>
+          <span class="text-center">Tesouraria</span>
         </div>
         <div class="grid-row" *ngFor="let grupo of gruposVisiveis">
-          <span class="col-csa">{{ grupo.CSA_Nome }}</span>
-          <span class="col-grupo">{{ grupo.Nome }}</span>
-          <span class="col-check">
+          <span class="text-brand/60 text-xs">{{ grupo.CSA_Nome }}</span>
+          <span class="font-medium">{{ grupo.Nome }}</span>
+          <span class="text-center">
             <input
               type="checkbox"
               [checked]="isPapelMarcado(grupo.Id, 'secretaria')"
@@ -122,7 +123,7 @@
               (change)="alterarPapel(grupo, 'secretaria', $any($event.target).checked)"
             />
           </span>
-          <span class="col-check">
+          <span class="text-center">
             <input
               type="checkbox"
               [checked]="isPapelMarcado(grupo.Id, 'tesouraria')"
@@ -133,11 +134,11 @@
         </div>
       </div>
 
-      <div class="paginacao" *ngIf="totalGrupos > pageSize">
+      <div class="flex items-center justify-center gap-3 mt-4 pt-3" *ngIf="totalGrupos > pageSize">
         <button type="button" class="btn btn-secondary btn-sm" [disabled]="!temPaginaAnterior" (click)="paginaAnterior()">
           Anterior
         </button>
-        <span class="paginacao-info">{{ pageInicio }}–{{ pageFim }} de {{ totalGrupos }}</span>
+        <span class="text-xs text-brand/60">{{ pageInicio }}–{{ pageFim }} de {{ totalGrupos }}</span>
         <button type="button" class="btn btn-secondary btn-sm" [disabled]="!temProximaPagina" (click)="proximaPagina()">
           Próxima
         </button>
@@ -145,13 +146,13 @@
     </div>
   </section>
 
-  <div class="actions">
-    <button type="button" class="btn btn-secondary" (click)="openModal()">
+  <div class="flex flex-wrap gap-2.5 justify-end mt-5 pt-4 border-t border-surface-border">
+    <button type="button" class="btn btn-secondary m-0" (click)="openModal()">
       Cadastrar novo grupo
     </button>
     <button
       type="button"
-      class="btn btn-primary"
+      class="btn btn-primary m-0"
       [disabled]="isSubmitting || isLoadingCsas"
       (click)="onSubmit()"
     >
@@ -160,9 +161,9 @@
   </div>
 </div>
 
-<div class="modal" *ngIf="showModal" (click)="closeModal()">
+<div class="fixed inset-0 z-[1000] bg-black/50 overflow-auto" *ngIf="showModal" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <h3>Novo grupo</h3>
+    <h3 class="text-lg font-semibold mb-4">Novo grupo</h3>
 
     <form [formGroup]="novoGrupoForm" (ngSubmit)="adicionarNovoGrupo()">
       <div class="form-group">
@@ -183,21 +184,21 @@
         </select>
       </div>
 
-      <div class="form-group papeis-modal">
-        <span class="label">Encargo(s) *</span>
-        <label>
+      <div class="form-group flex flex-wrap gap-3 items-center">
+        <span class="font-medium mr-2">Encargo(s) *</span>
+        <label class="inline-flex items-center gap-2 font-normal cursor-pointer">
           <input type="checkbox" formControlName="secretaria" />
           Secretaria
         </label>
-        <label>
+        <label class="inline-flex items-center gap-2 font-normal cursor-pointer">
           <input type="checkbox" formControlName="tesouraria" />
           Tesouraria
         </label>
       </div>
 
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Adicionar</button>
+      <div class="flex justify-end gap-2.5 mt-4">
+        <button type="button" class="btn btn-secondary m-0" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary m-0">Adicionar</button>
       </div>
     </form>
   </div>
