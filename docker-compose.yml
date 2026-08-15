@@ -12,8 +12,12 @@ services:
       DB_NAME: ${DB_NAME:-tesouraria}
       DB_USER: ${DB_USER:-tesoureiro}
       DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-28800}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      CADASTRO_ABERTO: ${CADASTRO_ABERTO:-true}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/grupo/"]
+      test: ["CMD", "curl", "-f", "http://localhost/test.php"]
       interval: 15s
       timeout: 5s
       retries: 5

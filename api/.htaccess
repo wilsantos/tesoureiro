@@ -1,5 +1,9 @@
 # Desabilitar redirecionamentos automáticos
-RewriteEngine Off
+RewriteEngine On
+
+# Repassa Authorization para PHP (Apache costuma omitir em CGI/FastCGI)
+RewriteCond %{HTTP:Authorization} .
+RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
 # Permitir acesso aos arquivos PHP
 <FilesMatch "\.php$">

@@ -10,6 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+require_once __DIR__ . '/../config/auth.php';
+$usuario = requireAuth();
+
 require_once '../config/database.php';
 
 // Habilitar exibição de erros para debug (remover em produção se necessário)

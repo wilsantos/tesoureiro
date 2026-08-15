@@ -1,0 +1,19 @@
+<div class="container">
+  <div class="header">
+    <div class="header-main">
+      <h1>Servidor de NA</h1>
+      <div class="user-bar" *ngIf="usuario$ | async as usuario">
+        <span>Bem-vindo, {{ usuario.Nome }}</span>
+        <button type="button" class="btn btn-secondary" (click)="logout()">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <a routerLink="/app/grupos" routerLinkActive="active" class="nav-tab">Grupos</a>
+    <a routerLink="/app/reunioes" routerLinkActive="active" class="nav-tab">Reuniões</a>
+    <a routerLink="/app/relatorios" routerLinkActive="active" class="nav-tab">Relatórios</a>
+  </div>
+
+  <router-outlet></router-outlet>
+</div>

@@ -276,7 +276,7 @@ netstat -ano | findstr :8080
 
 ### Banco de dados externo
 
-O projeto **não inclui** um container PostgreSQL. Configure o banco existente no `.env`:
+O projeto **não inclui** um container PostgreSQL e utiliza **exclusivamente PostgreSQL 16**. Configure o banco existente no `.env`:
 
 ```env
 DB_HOST=host.docker.internal   # PostgreSQL no Windows/Mac (fora do Docker)
@@ -303,40 +303,6 @@ Para restaurar um backup no banco externo:
 .\scripts\restore-postgres.ps1 database\backup-postgres-20260806.dump
 ```
 
-### Migrar dados do MariaDB/MySQL
-
-Se você tem dados no MariaDB (XAMPP ou container antigo), siga esta ordem:
-
-1. **Fazer backup do MariaDB:**
-
-```powershell
-# Via container temporário (recomendado)
-.\scripts\backup-mysql.ps1
-
-# Ou via XAMPP local
-.\scripts\backup-mysql.ps1 -Source xampp
-```
-
-2. **Configurar o PostgreSQL externo no `.env`** (ver seção acima)
-
-3. **Migrar para PostgreSQL:**
-
-```powershell
-.\scripts\migrate-to-postgres.ps1
-```
-
-O script restaura o backup no MariaDB temporário, executa o pgloader para o PostgreSQL externo e ajusta as sequences.
-
-4. **Subir a aplicação:**
-
-```bash
-docker compose up -d --build
-```
-
-5. **Testar a conexão:**
-
-Acesse http://localhost:8081/api/test.php
-
 ### Backup e restore do PostgreSQL
 
 ```powershell
@@ -347,7 +313,7 @@ Acesse http://localhost:8081/api/test.php
 .\scripts\restore-postgres.ps1 database\backup-postgres-20260806.dump
 ```
 
-Versões shell (Linux/macOS): `scripts/backup-postgres.sh`, `scripts/restore-postgres.sh`, `scripts/backup-mysql.sh`, `scripts/migrate-to-postgres.sh`, `scripts/init-postgres.ps1`.
+Versões shell (Linux/macOS): `scripts/backup-postgres.sh`, `scripts/restore-postgres.sh`, `scripts/init-postgres.ps1`.
 
 ### Variáveis de ambiente
 
@@ -358,7 +324,6 @@ Versões shell (Linux/macOS): `scripts/backup-postgres.sh`, `scripts/restore-pos
 | `DB_NAME` | Nome do banco (padrão: `tesouraria`) |
 | `DB_USER` / `DB_PASSWORD` | Credenciais do PostgreSQL |
 | `APP_PORT` | Porta exposta do gateway (padrão: `8081`) |
-| `MYSQL_*` | Usadas apenas nos scripts de migração do MariaDB |
 
 A API lê `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` e `DB_PASSWORD` automaticamente no Docker.
 
