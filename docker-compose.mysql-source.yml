@@ -1,0 +1,25 @@
+# MariaDB temporário para migração de dados para PostgreSQL
+# Uso: docker compose -f docker-compose.mysql-source.yml up -d
+
+services:
+  mysql-source:
+    image: mariadb:10.4
+    ports:
+      - "${MYSQL_SOURCE_PORT:-3308}:3306"
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-tesouraria}
+      MYSQL_USER: ${MYSQL_USER:-tesoureiro}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-tesoureiro_secret}
+    volumes:
+      - mysql_source_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mysql_source_data:

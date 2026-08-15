@@ -9,13 +9,15 @@ class Database {
     private $db_name;
     private $username;
     private $password;
+    private $port;
     private $conn;
 
     public function __construct() {
         $this->host = getenv('DB_HOST') ?: 'localhost';
         $this->db_name = getenv('DB_NAME') ?: 'tesouraria';
-        $this->username = getenv('DB_USER') ?: 'root';
+        $this->username = getenv('DB_USER') ?: 'postgres';
         $this->password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : '';
+        $this->port = getenv('DB_PORT') ?: '5432';
     }
 
     public function getConnection() {
@@ -23,7 +25,7 @@ class Database {
 
         try {
             $this->conn = new PDO(
-                "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8",
+                "pgsql:host=" . $this->host . ";port=" . $this->port . ";dbname=" . $this->db_name,
                 $this->username,
                 $this->password
             );

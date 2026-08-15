@@ -85,7 +85,7 @@ Verifique:
 - A senha do banco está correta em `api/config/database.php`
 - O nome do banco está correto
 - O usuário do banco está correto
-- O servidor permite conexões do PHP ao MySQL
+- O servidor permite conexões do PHP ao PostgreSQL
 
 ### Angular não conecta com a API
 Verifique se a URL da API em `api.service.ts` está correta e apontando para o domínio de produção.

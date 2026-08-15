@@ -44,7 +44,7 @@ switch ($method) {
             
             try {
                 // Buscar dados do grupo (Saldo inicial e DataSaldo)
-                $stmtGrupo = $conn->prepare("SELECT Saldo, DataSaldo FROM grupo WHERE Id = ?");
+                $stmtGrupo = $conn->prepare("SELECT \"Saldo\", \"DataSaldo\" FROM grupo WHERE \"Id\" = ?");
                 $stmtGrupo->execute([$idGrupo]);
                 $grupo = $stmtGrupo->fetch();
                 
@@ -59,7 +59,7 @@ switch ($method) {
                 
                 // Se não houver DataSaldo, usar a primeira data de reunião ou data atual
                 if (!$dataSaldoInicial) {
-                    $stmtPrimeiraReuniao = $conn->prepare("SELECT MIN(Data) as PrimeiraData FROM reuniao WHERE IdGrupo = ?");
+                    $stmtPrimeiraReuniao = $conn->prepare("SELECT MIN(\"Data\") as \"PrimeiraData\" FROM reuniao WHERE \"IdGrupo\" = ?");
                     $stmtPrimeiraReuniao->execute([$idGrupo]);
                     $primeiraReuniao = $stmtPrimeiraReuniao->fetch();
                     $dataSaldoInicial = $primeiraReuniao['PrimeiraData'] ? $primeiraReuniao['PrimeiraData'] : date('Y-m-d');
@@ -70,7 +70,6 @@ switch ($method) {
                 $dataFinalMes = date('Y-m-t', strtotime("$ano-$mes-01"));
                 
                 // Calcular saldo acumulado até o último dia do mês anterior
-                // Primeiro, buscar todas as reuniões desde DataSaldo até o último dia do mês anterior
                 $dataFimMesAnterior = date('Y-m-t', strtotime("$ano-$mes-01 -1 month"));
                 
                 // Inicializar com o saldo inicial do grupo
@@ -79,10 +78,10 @@ switch ($method) {
                 // Se houver reuniões anteriores ao mês selecionado, calcular o saldo acumulado
                 if ($dataSaldoInicial <= $dataFimMesAnterior) {
                     $stmtReunioesAnteriores = $conn->prepare("
-                        SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix, r.VendaLiteratura
+                        SELECT r.\"Id\", r.\"Data\", r.\"ValorSetima\", r.\"ValorSetimaPix\", r.\"VendaLiteratura\"
                         FROM reuniao r
-                        WHERE r.IdGrupo = ? AND r.Data >= ? AND r.Data <= ?
-                        ORDER BY r.Data ASC
+                        WHERE r.\"IdGrupo\" = ? AND r.\"Data\" >= ? AND r.\"Data\" <= ?
+                        ORDER BY r.\"Data\" ASC
                     ");
                     $stmtReunioesAnteriores->execute([$idGrupo, $dataSaldoInicial, $dataFimMesAnterior]);
                     $reunioesAnteriores = $stmtReunioesAnteriores->fetchAll();
@@ -90,9 +89,9 @@ switch ($method) {
                     // Calcular saldo acumulado até o fim do mês anterior
                     foreach ($reunioesAnteriores as $reuniaoAnt) {
                         $stmtDespesasAnt = $conn->prepare("
-                            SELECT SUM(ValorDespesa) as TotalDespesas
+                            SELECT SUM(\"ValorDespesa\") as \"TotalDespesas\"
                             FROM despesas
-                            WHERE IdReuniao = ?
+                            WHERE \"IdReuniao\" = ?
                         ");
                         $stmtDespesasAnt->execute([$reuniaoAnt['Id']]);
                         $despesaAnt = $stmtDespesasAnt->fetch();
@@ -104,10 +103,10 @@ switch ($method) {
                 
                 // Buscar apenas as reuniões do mês selecionado
                 $stmtReunioes = $conn->prepare("
-                    SELECT r.Id, r.Data, r.ValorSetima, r.ValorSetimaPix, r.VendaLiteratura
+                    SELECT r.\"Id\", r.\"Data\", r.\"ValorSetima\", r.\"ValorSetimaPix\", r.\"VendaLiteratura\"
                     FROM reuniao r
-                    WHERE r.IdGrupo = ? AND r.Data >= ? AND r.Data <= ?
-                    ORDER BY r.Data ASC
+                    WHERE r.\"IdGrupo\" = ? AND r.\"Data\" >= ? AND r.\"Data\" <= ?
+                    ORDER BY r.\"Data\" ASC
                 ");
                 $stmtReunioes->execute([$idGrupo, $dataInicioMes, $dataFinalMes]);
                 $reunioes = $stmtReunioes->fetchAll();
@@ -116,9 +115,9 @@ switch ($method) {
                 $despesasPorReuniao = [];
                 foreach ($reunioes as $reuniao) {
                     $stmtDespesas = $conn->prepare("
-                        SELECT SUM(ValorDespesa) as TotalDespesas
+                        SELECT SUM(\"ValorDespesa\") as \"TotalDespesas\"
                         FROM despesas
-                        WHERE IdReuniao = ?
+                        WHERE \"IdReuniao\" = ?
                     ");
                     $stmtDespesas->execute([$reuniao['Id']]);
                     $despesa = $stmtDespesas->fetch();
@@ -194,7 +193,7 @@ switch ($method) {
                 // Relatório Geral de Reuniões - Apenas Totais do Mês
                 
                 // Buscar nome do grupo
-                $stmtGrupo = $conn->prepare("SELECT Nome FROM grupo WHERE Id = ?");
+                $stmtGrupo = $conn->prepare("SELECT \"Nome\" FROM grupo WHERE \"Id\" = ?");
                 $stmtGrupo->execute([$idGrupo]);
                 $grupo = $stmtGrupo->fetch();
                 $nomeGrupo = $grupo['Nome'] ?? '';
@@ -202,48 +201,48 @@ switch ($method) {
                 // Calcular totais das reuniões
                 $stmtTotais = $conn->prepare("
                     SELECT 
-                        COUNT(r.Id) as TotalReunioes,
-                        SUM(r.Membros) as TotalMembros,
-                        SUM(r.Visitantes) as TotalVisitantes,
-                        SUM(r.ValorSetima) as TotalSetimaMes,
-                        SUM(r.ValorSetimaPix) as TotalSetimaPixMes,
-                        SUM(r.Ingresso) as TotalIngresso,
-                        SUM(r.TrintaDias) as TotalTrintaDias,
-                        SUM(r.SessentaDias) as TotalSessentaDias,
-                        SUM(r.NoventaDias) as TotalNoventaDias,
-                        SUM(r.SeisMeses) as TotalSeisMeses,
-                        SUM(r.NoveMeses) as TotalNoveMeses,
-                        SUM(r.UmAno) as TotalUmAno,
-                        SUM(r.DezoitoMeses) as TotalDezoitoMeses,
-                        SUM(r.MultiplosAnos) as TotalMultiplosAnos
+                        COUNT(r.\"Id\") as \"TotalReunioes\",
+                        SUM(r.\"Membros\") as \"TotalMembros\",
+                        SUM(r.\"Visitantes\") as \"TotalVisitantes\",
+                        SUM(r.\"ValorSetima\") as \"TotalSetimaMes\",
+                        SUM(r.\"ValorSetimaPix\") as \"TotalSetimaPixMes\",
+                        SUM(r.\"Ingresso\") as \"TotalIngresso\",
+                        SUM(r.\"TrintaDias\") as \"TotalTrintaDias\",
+                        SUM(r.\"SessentaDias\") as \"TotalSessentaDias\",
+                        SUM(r.\"NoventaDias\") as \"TotalNoventaDias\",
+                        SUM(r.\"SeisMeses\") as \"TotalSeisMeses\",
+                        SUM(r.\"NoveMeses\") as \"TotalNoveMeses\",
+                        SUM(r.\"UmAno\") as \"TotalUmAno\",
+                        SUM(r.\"DezoitoMeses\") as \"TotalDezoitoMeses\",
+                        SUM(r.\"MultiplosAnos\") as \"TotalMultiplosAnos\"
                     FROM reuniao r
-                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ?
+                    WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ?
                 ");
                 $stmtTotais->execute([$idGrupo, $mes, $ano]);
                 $totaisReunioes = $stmtTotais->fetch();
 
                 // Calcular total de despesas do período
                 $stmtDespesas = $conn->prepare("
-                    SELECT COALESCE(SUM(d.ValorDespesa), 0) as TotalDespesasMes
+                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as \"TotalDespesasMes\"
                     FROM despesas d
-                    INNER JOIN reuniao r ON d.IdReuniao = r.Id
-                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ?
+                    INNER JOIN reuniao r ON d.\"IdReuniao\" = r.\"Id\"
+                    WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ?
                 ");
                 $stmtDespesas->execute([$idGrupo, $mes, $ano]);
 
                 $stmtRepasse = $conn->prepare("
-                    SELECT COALESCE(SUM(d.ValorDespesa), 0) as TotalRepasseMes
+                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as \"TotalRepasseMes\"
                     FROM despesas d
-                    INNER JOIN reuniao r ON d.IdReuniao = r.Id
-                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ? AND d.repasse = 1
+                    INNER JOIN reuniao r ON d.\"IdReuniao\" = r.\"Id\"
+                    WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ? AND d.repasse = TRUE
                 ");
                 $stmtRepasse->execute([$idGrupo, $mes, $ano]);
 
                 $stmtCompraLiteratura = $conn->prepare("
-                    SELECT COALESCE(SUM(d.ValorDespesa), 0) as TotalCompraLiteraturaMes
+                    SELECT COALESCE(SUM(d.\"ValorDespesa\"), 0) as \"TotalCompraLiteraturaMes\"
                     FROM despesas d
-                    INNER JOIN reuniao r ON d.IdReuniao = r.Id
-                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ? AND d.compra_literatura = 1
+                    INNER JOIN reuniao r ON d.\"IdReuniao\" = r.\"Id\"
+                    WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ? AND d.compra_literatura = TRUE
                 ");
                 $stmtCompraLiteratura->execute([$idGrupo, $mes, $ano]);
 
@@ -284,11 +283,11 @@ switch ($method) {
                 $stmt = $conn->prepare("
                     SELECT 
                         r.*,
-                        g.Nome as NomeGrupo
+                        g.\"Nome\" as \"NomeGrupo\"
                     FROM reuniao r
-                    INNER JOIN grupo g ON r.IdGrupo = g.Id
-                    WHERE r.IdGrupo = ? AND MONTH(r.Data) = ? AND YEAR(r.Data) = ?
-                    ORDER BY r.Data ASC
+                    INNER JOIN grupo g ON r.\"IdGrupo\" = g.\"Id\"
+                    WHERE r.\"IdGrupo\" = ? AND EXTRACT(MONTH FROM r.\"Data\") = ? AND EXTRACT(YEAR FROM r.\"Data\") = ?
+                    ORDER BY r.\"Data\" ASC
                 ");
                 $stmt->execute([$idGrupo, $mes, $ano]);
                 $reunioes = $stmt->fetchAll();
@@ -302,10 +301,10 @@ switch ($method) {
 
                 foreach ($reunioes as $reuniao) {
                     $stmtDespesas = $conn->prepare("
-                        SELECT Id, Descricao, ValorDespesa
+                        SELECT \"Id\", \"Descricao\", \"ValorDespesa\"
                         FROM despesas
-                        WHERE IdReuniao = ?
-                        ORDER BY Id ASC
+                        WHERE \"IdReuniao\" = ?
+                        ORDER BY \"Id\" ASC
                     ");
                     $stmtDespesas->execute([$reuniao['Id']]);
                     $despesas = $stmtDespesas->fetchAll();

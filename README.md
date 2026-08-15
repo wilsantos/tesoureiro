@@ -194,7 +194,7 @@ ng build --configuration production
 - `IdReuniao` (FK)
 - `Descricao`
 - `ValorDespesa`
-- `Comprovante` (mediumblob)
+- `Comprovante` (BYTEA)
 
 **csa**
 - `Id` (PK)
@@ -204,7 +204,7 @@ ng build --configuration production
 
 - **Backend**: PHP 7.4+
 - **Frontend**: Angular 17
-- **Banco de Dados**: MySQL/MariaDB
+- **Banco de Dados**: PostgreSQL 16
 - **Servidor**: InfinityFree, XAMPP (desenvolvimento) ou Docker
 
 ## Docker
@@ -274,25 +274,93 @@ Para ver o que está usando uma porta no Windows:
 netstat -ano | findstr :8080
 ```
 
-### Importar backup existente
+### Banco de dados externo
 
-Os scripts em `docker/mysql/init/` rodam apenas na **primeira** criação do volume. Para importar um backup:
+O projeto **não inclui** um container PostgreSQL. Configure o banco existente no `.env`:
+
+```env
+DB_HOST=host.docker.internal   # PostgreSQL no Windows/Mac (fora do Docker)
+DB_PORT=5432
+DB_NAME=tesouraria
+DB_USER=tesoureiro
+DB_PASSWORD=sua_senha
+```
+
+- Se o PostgreSQL roda na **mesma máquina** que o Docker, use `DB_HOST=host.docker.internal`
+- Se roda em **outro servidor**, use o IP ou hostname do servidor em `DB_HOST`
+
+Para criar o schema inicial no banco externo:
+
+```powershell
+.\scripts\init-postgres.ps1
+```
+
+### Importar backup PostgreSQL
+
+Para restaurar um backup no banco externo:
+
+```powershell
+.\scripts\restore-postgres.ps1 database\backup-postgres-20260806.dump
+```
+
+### Migrar dados do MariaDB/MySQL
+
+Se você tem dados no MariaDB (XAMPP ou container antigo), siga esta ordem:
+
+1. **Fazer backup do MariaDB:**
+
+```powershell
+# Via container temporário (recomendado)
+.\scripts\backup-mysql.ps1
+
+# Ou via XAMPP local
+.\scripts\backup-mysql.ps1 -Source xampp
+```
+
+2. **Configurar o PostgreSQL externo no `.env`** (ver seção acima)
+
+3. **Migrar para PostgreSQL:**
+
+```powershell
+.\scripts\migrate-to-postgres.ps1
+```
+
+O script restaura o backup no MariaDB temporário, executa o pgloader para o PostgreSQL externo e ajusta as sequences.
+
+4. **Subir a aplicação:**
 
 ```bash
-docker compose up -d db
-docker compose exec -T db mysql -u root -p${MYSQL_ROOT_PASSWORD} tesouraria < database/tesouraria-backup-2026-07-10.sql
+docker compose up -d --build
 ```
+
+5. **Testar a conexão:**
+
+Acesse http://localhost:8081/api/test.php
+
+### Backup e restore do PostgreSQL
+
+```powershell
+# Criar backup
+.\scripts\backup-postgres.ps1
+
+# Restaurar backup
+.\scripts\restore-postgres.ps1 database\backup-postgres-20260806.dump
+```
+
+Versões shell (Linux/macOS): `scripts/backup-postgres.sh`, `scripts/restore-postgres.sh`, `scripts/backup-mysql.sh`, `scripts/migrate-to-postgres.sh`, `scripts/init-postgres.ps1`.
 
 ### Variáveis de ambiente
 
 | Variável | Descrição |
 |----------|-----------|
-| `MYSQL_ROOT_PASSWORD` | Senha root do MariaDB |
-| `MYSQL_DATABASE` | Nome do banco (padrão: `tesouraria`) |
-| `MYSQL_USER` / `MYSQL_PASSWORD` | Usuário da aplicação |
-| `APP_PORT` | Porta exposta do gateway (padrão: `8081`; use outra se `8080` já estiver ocupada) |
+| `DB_HOST` | Host do PostgreSQL externo (`host.docker.internal` para banco local) |
+| `DB_PORT` | Porta do PostgreSQL (padrão: `5432`) |
+| `DB_NAME` | Nome do banco (padrão: `tesouraria`) |
+| `DB_USER` / `DB_PASSWORD` | Credenciais do PostgreSQL |
+| `APP_PORT` | Porta exposta do gateway (padrão: `8081`) |
+| `MYSQL_*` | Usadas apenas nos scripts de migração do MariaDB |
 
-A API lê `DB_HOST`, `DB_NAME`, `DB_USER` e `DB_PASSWORD` automaticamente no Docker.
+A API lê `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` e `DB_PASSWORD` automaticamente no Docker.
 
 ## Desenvolvimento
 

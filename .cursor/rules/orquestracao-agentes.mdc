@@ -1,0 +1,19 @@
+---
+description: Quando delegar aos agents Arquiteto, DBA, Dev PHP e Front-end do Tesoureiro
+alwaysApply: true
+---
+
+# Agents do Tesoureiro
+
+Delegar com o Task tool (ou o usuário com `/nome`) para o specialist certo:
+
+| Trabalho | Agent |
+|---|---|
+| Documentação, ADR, decisão estrutural, plano de manutenção | `arquiteto` |
+| Scripts e migrações SQL | `dba` |
+| Endpoints e código em `api/` | `dev-php` |
+| Telas, jornadas e Angular em `frontend/` | `frontend-dev` |
+
+Feature completa (várias camadas): `arquiteto` → `dba` → `dev-php` → `frontend-dev`.
+
+O `dba` nunca executa SQL no banco. Só grava arquivos em `database/` e espera acordo explícito do usuário.
