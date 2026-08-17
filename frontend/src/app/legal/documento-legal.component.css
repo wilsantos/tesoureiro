@@ -1,0 +1,143 @@
+.legal-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 2px solid #F9E423;
+}
+
+.legal-marca {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #211E70;
+}
+
+.legal-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #211E70;
+}
+
+.legal-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgb(33 30 112 / 0.6);
+}
+
+.legal-aviso {
+  margin: 0 0 1.75rem;
+  padding: 1rem 1.15rem;
+  border-left: 4px solid #211E70;
+  background: #f5f5fa;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.legal-aviso p {
+  margin: 0;
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+
+.legal-body h2 {
+  margin: 1.75rem 0 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #211E70;
+}
+
+.legal-body h3 {
+  margin: 1.25rem 0 0.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #211E70;
+}
+
+.legal-body p {
+  margin: 0 0 0.85rem;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.legal-body ul,
+.legal-body ol {
+  margin: 0 0 1rem;
+  padding-left: 1.4rem;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.legal-body ul {
+  list-style: disc;
+}
+
+.legal-body ol {
+  list-style: decimal;
+}
+
+.legal-body li {
+  margin-bottom: 0.35rem;
+}
+
+.legal-body a {
+  color: #211E70;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.legal-body a:hover {
+  text-decoration: underline;
+  color: #211E70;
+}
+
+.legal-body code {
+  font-size: 0.875em;
+  background: #f5f5fa;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+}
+
+.legal-body .table-container {
+  margin: 0.75rem 0 1.25rem;
+}
+
+.legal-body table {
+  font-size: 0.875rem;
+  margin-bottom: 0;
+}
+
+.legal-assinatura {
+  margin: 2rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e4e4ef;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: rgb(33 30 112 / 0.6);
+}
+
+.legal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e4e4ef;
+  font-size: 0.875rem;
+  color: rgb(33 30 112 / 0.6);
+}
+
+.legal-footer a {
+  color: #211E70;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.legal-footer a:hover {
+  text-decoration: underline;
+}

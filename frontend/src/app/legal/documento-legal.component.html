@@ -1,0 +1,314 @@
+<div class="legal-page min-h-screen flex items-start justify-center p-5 bg-brand">
+  <article class="legal-card w-full max-w-3xl bg-surface rounded-lg shadow-xl p-8 md:px-10 md:py-10 my-4 text-brand">
+    <header class="legal-header">
+      <p class="legal-marca">Servidor de NA</p>
+      <h1>{{ titulo }}</h1>
+      <p class="legal-meta">Versão 1.0 — vigência a partir de <strong>16 de agosto de 2026</strong></p>
+    </header>
+
+    <div class="legal-body" *ngIf="documento === 'termos'">
+      <blockquote class="legal-aviso">
+        <p>
+          <strong>Aviso:</strong> este documento descreve as regras de uso deste aplicativo. Não substitui assessoria jurídica, contábil ou as tradições e diretrizes oficiais de Narcóticos Anônimos. Em caso de dúvida legal, consulte um profissional habilitado. Em caso de dúvida sobre o serviço, fale com o administrador desta instância.
+        </p>
+      </blockquote>
+
+      <h2>1. Quem oferece o serviço</h2>
+      <p>1.1. <strong>Servidor de NA</strong> é um aplicativo de tesouraria para grupos de Narcóticos Anônimos. Destina-se a <strong>servidores de confiança</strong> com encargo de secretaria e/ou tesouraria: cadastro de grupos, registro de reuniões, lançamento de despesas e emissão de relatórios.</p>
+      <p>1.2. Este software pode ser disponibilizado em instâncias distintas (por exemplo, Docker, ambiente local ou hospedagem compartilhada). <strong>Quem opera esta instância</strong> — a pessoa ou o corpo de serviço que a instala, configura e mantém — é o responsável pelo serviço perante os usuários desta instalação.</p>
+      <p>1.3. Estes Termos aplicam-se ao uso <strong>desta instância</strong>, no endereço em que você a acessa. Não criam vínculo com Narcóticos Anônimos como irmandade, com a ABNA ou com qualquer estrutura de serviço, salvo se essa estrutura for, ela própria, a operadora desta instância.</p>
+
+      <h2>2. Aceitação</h2>
+      <p>2.1. Ao criar uma conta em <strong>Criar conta</strong> (<code>/cadastro</code>) e marcar o aceite, você declara que leu, compreendeu e concorda com estes Termos e com a <a routerLink="/privacidade">Política de Privacidade</a>.</p>
+      <p>2.2. O uso continuado do serviço após o cadastro também implica observância destes Termos.</p>
+      <p>2.3. Se você não concordar, não crie conta e não utilize o aplicativo.</p>
+
+      <h2>3. Destinatários e idade mínima</h2>
+      <p>3.1. O serviço é voltado a adultos que exercem serviço de confiança em grupos de NA (secretaria, tesouraria ou ambos). <strong>Não</strong> é um aplicativo para crianças ou adolescentes e <strong>não</strong> se destina ao cadastro de membros em recuperação.</p>
+      <p>3.2. Você declara ter <strong>18 anos ou mais</strong> e capacidade para aceitar estes Termos.</p>
+      <p>3.3. O administrador da instância não deve criar, de forma consciente, contas para menores de 18 anos.</p>
+
+      <h2>4. Conta de usuário</h2>
+      <p>4.1. No cadastro por e-mail e senha, você informa <strong>nome</strong>, <strong>e-mail</strong> e <strong>senha</strong> (mínimo de 8 caracteres). A senha é armazenada apenas como hash (Argon2id ou bcrypt), nunca em texto claro.</p>
+      <p>4.2. Você é responsável por manter a senha em sigilo e por toda atividade realizada com a sua conta.</p>
+      <p>4.3. O aplicativo também pode oferecer entrada com <strong>Google</strong>. Nesse fluxo, o Google informa ao aplicativo nome, e-mail e um identificador da conta Google (<code>sub</code>). A conta nesta instância pode ser criada ou vinculada a partir desses dados. O tratamento feito pelo Google rege-se pelos termos e pela política de privacidade da Google.</p>
+      <p>4.4. Após o login, o aplicativo emite um token de acesso (JWT) gravado no <strong>armazenamento local do navegador</strong> (<code>localStorage</code>), não em cookie de sessão. Quem tiver acesso ao seu dispositivo ou a esse token pode agir em seu nome até o token expirar. Não compartilhe o dispositivo desbloqueado nem o conteúdo do <code>localStorage</code>.</p>
+      <p>4.5. O administrador da instância pode recusar, suspender ou encerrar contas em caso de uso indevido, risco à segurança ou decisão operacional da instância.</p>
+
+      <h2>5. O que o serviço faz — e o que não faz</h2>
+      <p>5.1. <strong>O serviço faz:</strong> apoiar a tesouraria e a secretaria do grupo (grupos, reuniões, despesas e relatórios), com vínculo do usuário a um ou mais grupos e papéis de secretaria e/ou tesouraria.</p>
+      <p>5.2. <strong>O serviço não faz:</strong></p>
+      <ul>
+        <li>cadastro de lista de membros ou de pessoas em recuperação;</li>
+        <li>registro de nomes de addicts nas reuniões — as reuniões guardam <strong>contagens</strong> (membros, visitantes, faixas de tempo limpo) e valores da 7ª Tradição, não identidades;</li>
+        <li>aconselhamento espiritual, jurídico, fiscal ou contábil;</li>
+        <li>substituição das tradições, conceitos de serviço ou manuais da irmandade.</li>
+      </ul>
+      <p>5.3. Campos de <strong>texto livre</strong> (por exemplo, fatos relevantes da reunião) e o <strong>endereço do grupo</strong> podem, se mal preenchidos, conter dados pessoais. Cabe a você não incluir nomes de membros, telefones, documentos ou qualquer informação que identifique pessoas em recuperação, salvo o estritamente necessário à tesouraria do grupo e permitido pelas tradições de anonimato.</p>
+
+      <h2>6. Uso permitido e proibido</h2>
+      <p>6.1. Você se compromete a:</p>
+      <ul>
+        <li>usar o serviço apenas para tesouraria e secretaria de grupos de NA aos quais esteja vinculado como servidor de confiança;</li>
+        <li>informar dados verdadeiros na sua conta;</li>
+        <li>respeitar o anonimato e a confidencialidade das informações do grupo;</li>
+        <li>cumprir a legislação brasileira aplicável, inclusive a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</li>
+      </ul>
+      <p>6.2. É proibido:</p>
+      <ul>
+        <li>tentar acessar contas, grupos ou dados de terceiros sem autorização;</li>
+        <li>burlar autenticação, copiar o token JWT de outra pessoa ou explorar falhas de segurança;</li>
+        <li>usar o aplicativo para vigiar, expor ou identificar membros da irmandade;</li>
+        <li>inserir conteúdo ilícito, ofensivo ou que viole direitos de terceiros;</li>
+        <li>sobrecarregar a instância de forma abusiva (ataques, extração massiva não autorizada, etc.).</li>
+      </ul>
+
+      <h2>7. Conteúdo inserido por você</h2>
+      <p>7.1. Grupos, reuniões, despesas e textos que você cadastrar permanecem sob a responsabilidade de quem os inseriu e do grupo a que se referem.</p>
+      <p>7.2. Você concede ao operador desta instância a permissão técnica necessária para armazenar, copiar internamente e exibir esse conteúdo <strong>apenas para operar o serviço</strong> (incluindo backup da instância, se o administrador o realizar).</p>
+      <p>7.3. Relatórios exportados (por exemplo, em arquivo de texto ou documento) são de responsabilidade de quem os gera e de quem os guarda fora do aplicativo.</p>
+
+      <h2>8. Instâncias auto-hospedadas e disponibilidade</h2>
+      <p>8.1. O operador da instância define onde os dados ficam (servidor próprio, Docker, hospedagem compartilhada etc.), as cópias de segurança e o tempo em que o serviço permanece no ar.</p>
+      <p>8.2. O serviço é oferecido <strong>como está</strong>, sem garantia de funcionamento ininterrupto, de ausência de erros ou de adequação a um fim específico além do descrito nestes Termos.</p>
+      <p>8.3. Manutenções, falhas de internet, da hospedagem ou do navegador podem impedir o acesso temporário. O operador da instância não se obriga a um nível de serviço (SLA) nestes Termos, salvo compromisso escrito à parte.</p>
+
+      <h2>9. Limitação de responsabilidade</h2>
+      <p>9.1. Na medida permitida pela legislação brasileira, o operador da instância não responde por:</p>
+      <ul>
+        <li>decisões financeiras do grupo tomadas com base em relatórios do aplicativo;</li>
+        <li>perda de dados causada por falha do dispositivo do usuário, do navegador ou de cópia de segurança inexistente ou incompleta;</li>
+        <li>conteúdo inserido por usuários (incluindo dados pessoais colocados indevidamente em texto livre);</li>
+        <li>atos de terceiros (Google, provedor de hospedagem, BMLT ou outros serviços externos).</li>
+      </ul>
+      <p>9.2. Nada nestes Termos exclui responsabilidade por dolo, culpa grave ou outras hipóteses que a lei brasileira não permita afastar.</p>
+
+      <h2>10. Propriedade intelectual</h2>
+      <p>10.1. O nome de exibição <strong>Servidor de NA</strong>, a interface desta instância e o código do aplicativo, na forma em que forem disponibilizados, pertencem aos respectivos titulares. O uso do serviço não transfere titularidade de software ao usuário.</p>
+      <p>10.2. Nomes, logotipos e literatura de Narcóticos Anônimos, se eventualmente referidos, pertencem aos seus titulares e não são licenciados por estes Termos.</p>
+
+      <h2>11. Serviços de terceiros</h2>
+      <p>11.1. <strong>Google.</strong> Se você usar “Entrar com Google”, aplicam-se também os termos da Google. Esta instância recebe apenas os dados necessários à conta (nome, e-mail e identificador <code>sub</code>), conforme a <a routerLink="/privacidade">Política de Privacidade</a>.</p>
+      <p>11.2. <strong>BMLT.</strong> A sugestão de CSA/CSR (comunidades e regiões de serviço) pode basear-se em listas públicas do BMLT. Esse diretório descreve estruturas de serviço, não membros. A disponibilidade e o conteúdo dessa lista não são controlados por esta instância.</p>
+      <p>11.3. A hospedagem, o certificado HTTPS e o correio eletrônico, se existirem, são de responsabilidade do provedor contratado pelo administrador da instância.</p>
+
+      <h2>12. Encerramento do uso</h2>
+      <p>12.1. Você pode deixar de usar o serviço a qualquer momento. Para exclusão da conta e dos dados pessoais, solicite ao <strong>administrador desta instância</strong>, nos termos da <a routerLink="/privacidade">Política de Privacidade</a>.</p>
+      <p>12.2. O administrador pode encerrar ou restringir o acesso em caso de violação destes Termos, descontinuação da instância ou obrigação legal.</p>
+      <p>12.3. Dados de tesouraria do grupo (reuniões, despesas, saldos) podem permanecer na instância após a saída de um servidor, porque pertencem ao histórico do grupo, não só à conta individual — salvo pedido legítimo de exclusão ou anonimização de dados pessoais identificáveis.</p>
+
+      <h2>13. Alterações destes Termos</h2>
+      <p>13.1. O administrador da instância pode atualizar estes Termos. A versão vigente será publicada em <code>/termos</code>, com a data de vigência.</p>
+      <p>13.2. Alterações relevantes devem ser comunicadas de forma razoável (por exemplo, aviso na própria instância). O uso continuado após a nova vigência constitui aceite da versão atualizada, quando a lei permitir.</p>
+      <p>13.3. A fonte em texto dos Termos, para quem mantém o software, está no repositório do projeto (<code>docs/legal/termos-de-servico.md</code>). A página pública <code>/termos</code> é a versão oponível aos usuários desta instância.</p>
+
+      <h2>14. Lei aplicável e foro</h2>
+      <p>14.1. Estes Termos interpretam-se de acordo com a legislação da <strong>República Federativa do Brasil</strong>, em especial o Código Civil e a LGPD.</p>
+      <p>14.2. Eventuais controvérsias serão processadas no foro do domicílio do usuário, quando a lei do consumidor ou outra norma cogente assim determinar; nos demais casos, no foro do local de operação da instância, se conhecido, ou conforme a lei processual brasileira.</p>
+
+      <h2>15. Contato</h2>
+      <p>Para dúvidas sobre estes Termos, exercício de direitos ou problemas na instância, entre em contato com o <strong>administrador desta instância</strong> — a pessoa ou o corpo de serviço que publica e mantém este endereço na internet. Este documento não indica e-mail genérico nem encarregado (DPO) inventado: o canal é o que o próprio administrador divulgar (reunião de serviço, recado no grupo, página de aviso da instalação, etc.).</p>
+
+      <p class="legal-assinatura">Servidor de NA — Termos de Serviço v1.0, 16 de agosto de 2026.</p>
+    </div>
+
+    <div class="legal-body" *ngIf="documento === 'privacidade'">
+      <blockquote class="legal-aviso">
+        <p>
+          <strong>Aviso:</strong> esta política explica, em linguagem clara, como dados pessoais podem ser tratados nesta instância do aplicativo. Não substitui assessoria jurídica nem dispensa o cumprimento da Lei nº 13.709/2018 (LGPD) pelo operador da instância. Dúvidas sobre os seus dados: fale com o <strong>administrador desta instância</strong>.
+        </p>
+      </blockquote>
+
+      <h2>1. Quem é o controlador</h2>
+      <p>1.1. O <strong>Servidor de NA</strong> é um aplicativo de tesouraria para grupos de Narcóticos Anônimos. Pode ser instalado por diferentes operadores (auto-hospedagem em Docker, ambiente local, hospedagem compartilhada ou outro meio).</p>
+      <p>1.2. O <strong>controlador</strong> dos dados pessoais, nos termos da LGPD, é quem <strong>opera esta instância</strong>: a pessoa física, o grupo de servidores ou o corpo de serviço que a disponibiliza neste endereço. Não há, neste documento, razão social, CNPJ ou encarregado (DPO) fictícios.</p>
+      <p>1.3. Se você não souber quem administra a instalação, pergunte a quem lhe enviou o link ou aos servidores de confiança do seu grupo.</p>
+
+      <h2>2. Esta política não descreve um cadastro de membros</h2>
+      <p>2.1. O aplicativo <strong>não</strong> é uma lista de membros em recuperação e <strong>não</strong> se destina a guardar nomes de addicts.</p>
+      <p>2.2. As <strong>reuniões</strong> registram contagens (quantos membros, visitantes, faixas de tempo limpo) e valores da 7ª Tradição, não a identidade de quem esteve presente.</p>
+      <p>2.3. Ainda assim, o <strong>endereço do grupo</strong> e o campo <strong>fatos relevantes</strong> (texto livre) podem conter dados pessoais se alguém os digitar. Isso deve ser evitado. Ver seção 11.</p>
+
+      <h2>3. Quais dados são tratados</h2>
+
+      <h3>3.1. Dados da sua conta</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Dado</th>
+              <th>Origem</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nome</td>
+              <td>Cadastro ou Google</td>
+              <td>Identificação no aplicativo</td>
+            </tr>
+            <tr>
+              <td>E-mail</td>
+              <td>Cadastro ou Google</td>
+              <td>Login e comunicação operacional do administrador, se houver</td>
+            </tr>
+            <tr>
+              <td>Senha</td>
+              <td>Cadastro por e-mail</td>
+              <td>Só o <strong>hash</strong> (Argon2id ou bcrypt) é guardado; a senha em claro não é armazenada</td>
+            </tr>
+            <tr>
+              <td>Identificador Google (<code>sub</code>)</td>
+              <td>Login Google (GIS)</td>
+              <td>Vínculo da conta Google a esta instância</td>
+            </tr>
+            <tr>
+              <td>Datas de criação e atualização</td>
+              <td>Sistema</td>
+              <td>Auditoria mínima da conta</td>
+            </tr>
+            <tr>
+              <td>Último acesso</td>
+              <td>Sistema</td>
+              <td>Usado em regras de vínculo com grupos (por exemplo, encargo ocupado)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Não há, na versão atual do cadastro por e-mail, foto, telefone, CPF ou endereço residencial do usuário.</p>
+
+      <h3>3.2. Dados gerados no uso (após o onboarding)</h3>
+      <p>Quando você vincula grupos e usa tesouraria/secretaria, a instância passa a guardar, entre outros:</p>
+      <ul>
+        <li><strong>vínculo usuário ↔ grupo</strong> e <strong>papel</strong> (secretaria e/ou tesouraria);</li>
+        <li><strong>grupo:</strong> nome, endereço, CSA (Comunidade de Serviço de Área), saldo e data de saldo;</li>
+        <li><strong>reunião:</strong> data, contagens de membros e visitantes, faixas de tempo limpo, valores da 7ª Tradição (inclusive Pix, se lançado), venda de literatura, fatos relevantes em texto livre;</li>
+        <li><strong>despesa:</strong> valor, descrição e classificação (por exemplo, repasse ou compra de literatura).</li>
+      </ul>
+      <p>Na versão atual <strong>não</strong> há envio de comprovantes (fotos ou PDFs de recibos) pelo aplicativo.</p>
+
+      <h3>3.3. Dados de estruturas de serviço (CSA/CSR)</h3>
+      <p>A escolha de CSA/CSR pode usar listas públicas do <strong>BMLT</strong> (nomes de comunidades e regiões de serviço). Esses registros descrevem estruturas da irmandade, não contas de usuários deste aplicativo.</p>
+
+      <h3>3.4. Dados técnicos</h3>
+      <p>O servidor web (Apache, Nginx ou equivalente) e a hospedagem podem registrar, nos logs, endereço IP, data e hora, página acessada e identificador do navegador. Isso é típico de qualquer site e depende da configuração feita pelo administrador da instância. O aplicativo em si autentica com JWT no <code>localStorage</code>, não com cookie de sessão próprio.</p>
+
+      <h2>4. Para que os dados são usados</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Finalidade</th>
+              <th>Exemplos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Criar e autenticar a conta</td>
+              <td>Cadastro, login e-mail/senha, login Google, token JWT</td>
+            </tr>
+            <tr>
+              <td>Prestar o serviço de tesouraria</td>
+              <td>Grupos, reuniões, despesas, relatórios</td>
+            </tr>
+            <tr>
+              <td>Vincular servidores aos grupos</td>
+              <td>Papéis de secretaria e tesouraria; regras de encargo</td>
+            </tr>
+            <tr>
+              <td>Segurança da instância</td>
+              <td>Detectar abuso, proteger hashes de senha, expirar tokens</td>
+            </tr>
+            <tr>
+              <td>Cumprir a lei</td>
+              <td>Atender direitos do titular ou ordem legal válida</td>
+            </tr>
+            <tr>
+              <td>Operação da instalação</td>
+              <td>Backup, restauração e manutenção feitos pelo administrador</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Não utilizamos os dados da conta para publicidade de terceiros nem para vender listas de e-mails. Esta política não autoriza marketing dirigido a membros da irmandade.</p>
+
+      <h2>5. Bases legais (LGPD, art. 7º)</h2>
+      <p>O tratamento apoia-se, conforme o caso, em:</p>
+      <p>5.1. <strong>Execução de contrato</strong> (art. 7º, V): criar a conta, autenticar, manter o vínculo com grupos e operar tesouraria/secretaria — o núcleo do serviço que você solicita.</p>
+      <p>5.2. <strong>Consentimento</strong> (art. 7º, I): no cadastro por e-mail/senha, o checkbox de aceite destes documentos. Na versão atual o aceite é registrado <strong>apenas no navegador</strong> (o formulário não envia comprovante ao servidor). Isso <strong>não substitui</strong> o registro completo previsto no art. 8º da LGPD; a evolução prevista é gravar data e versão do texto na conta. Enquanto isso, a execução do contrato permanece a base principal da conta.</p>
+      <p>5.3. <strong>Legítimo interesse</strong> (art. 7º, IX), quando cabível e respeitados os direitos do titular: segurança da instância, logs técnicos mínimos, preservação do histórico de tesouraria do <strong>grupo</strong> (que não se confunde com ficha de membro) e sugestão de CSA/CSR a partir de listas públicas.</p>
+      <p>5.4. <strong>Cumprimento de obrigação legal ou regulatória</strong> (art. 7º, II), se o administrador for legalmente obrigado a conservar ou a fornecer determinado registro.</p>
+      <p>5.5. Dados eventualmente sensíveis ou relativos à saúde <strong>não</strong> são a finalidade do sistema. Não descreva nas telas a condição de recuperação de pessoas identificáveis. Se um texto livre revelar dado sensível de terceiro, a base legal torna-se inadequada — apague ou edite o conteúdo e avise o administrador.</p>
+
+      <h2>6. Cookies e armazenamento no navegador</h2>
+      <p>6.1. <strong>JWT no <code>localStorage</code>.</strong> Após o login, um token de acesso (algoritmo HS256) fica no armazenamento local do navegador. Não é um cookie de sessão HTTP do aplicativo. Qualquer script que rode na origem do site pode, em tese, ler esse token (risco de XSS). Não use o aplicativo em computador público sem encerrar a sessão e sem desconfiar de extensões desconhecidas.</p>
+      <p>6.2. <strong>Cookies de terceiros.</strong> O botão “Entrar com Google” carrega scripts da Google (Google Identity Services). A Google pode definir cookies no domínio dela, segundo a política da Google. O aplicativo não controla esses cookies.</p>
+      <p>6.3. <strong>Banner de cookies.</strong> Nesta versão não há banner próprio, porque o aplicativo não utiliza cookie de sessão para autenticar. Se o administrador da instância ativar outras ferramentas de medição, deverá informar à parte.</p>
+
+      <h2>7. Compartilhamento e operadores</h2>
+      <p>Os dados <strong>não</strong> são vendidos. Podem ser acessados ou processados por:</p>
+      <p>7.1. <strong>Administrador desta instância</strong> e quem ele autorizar para manter o servidor (backup, restauração, correção de falhas).</p>
+      <p>7.2. <strong>Google</strong>, se você usar o login Google: a Google trata o seu login segundo as regras dela; esta instância recebe nome, e-mail e <code>sub</code> para criar ou reconhecer a conta.</p>
+      <p>7.3. <strong>Provedor de hospedagem</strong> e infraestrutura (servidor, banco PostgreSQL, certificados, cópias de segurança), na medida em que o administrador os utilizar. O conteúdo armazenado nesse provedor segue o contrato entre o administrador e o provedor.</p>
+      <p>7.4. <strong>BMLT / publicação de estruturas de serviço</strong>, apenas no sentido inverso: a instância <strong>consulta</strong> listas públicas para autocomplete; não envia a sua conta nem as reuniões do grupo a esse diretório.</p>
+      <p>7.5. <strong>Autoridades</strong>, mediante ordem legal válida.</p>
+      <p>Outros usuários autenticados nesta instância podem ver dados de tesouraria dos grupos a que tiverem acesso operacional, conforme as regras do aplicativo. Não trate o sistema como diário pessoal.</p>
+
+      <h2>8. Transferências e local de armazenamento</h2>
+      <p>8.1. Os dados da tesouraria ficam no <strong>banco e no servidor escolhidos pelo administrador</strong> desta instância (no Brasil ou no exterior, conforme a hospedagem).</p>
+      <p>8.2. O login Google implica comunicação com servidores da Google, que podem estar fora do Brasil. Nesse caso aplicam-se as salvaguardas da Google e, no que couber, o art. 33 da LGPD. O uso do botão Google é facultativo: você pode cadastrar-se só com e-mail e senha.</p>
+
+      <h2>9. Retenção</h2>
+      <p>9.1. <strong>Conta:</strong> mantida enquanto você usar o serviço e a instância existir, ou até o administrador atender pedido de exclusão, salvo obrigação legal de conservar algum registro.</p>
+      <p>9.2. <strong>Tesouraria do grupo:</strong> reuniões, despesas e saldos tendem a ser conservados pelo tempo em que o grupo e a instância necessitarem de histórico (prestação de contas). A exclusão da sua conta <strong>pode não apagar</strong> o histórico financeiro do grupo, apenas o vínculo da sua pessoa, quando for possível separar os dois.</p>
+      <p>9.3. <strong>Logs de servidor:</strong> prazo definido pelo administrador ou pelo provedor (muitas vezes dias ou meses).</p>
+      <p>9.4. <strong>Token JWT:</strong> permanece no <code>localStorage</code> até expirar, até você sair da conta (logout) ou até limpar os dados do site no navegador.</p>
+      <p>9.5. Não há, nesta versão, comprovantes de despesa armazenados pelo aplicativo.</p>
+
+      <h2>10. Direitos do titular (LGPD, art. 18)</h2>
+      <p>Você pode solicitar ao <strong>administrador desta instância</strong>:</p>
+      <ul>
+        <li>confirmação da existência de tratamento;</li>
+        <li>acesso aos dados;</li>
+        <li>correção de dados incompletos, inexatos ou desatualizados;</li>
+        <li>anonimização, bloqueio ou eliminação de dados desnecessários ou excessivos, na medida em que a lei e o histórico do grupo permitirem;</li>
+        <li>portabilidade, quando aplicável e tecnicamente viável nesta instância;</li>
+        <li>informação sobre compartilhamentos;</li>
+        <li>revogação do consentimento, quando o tratamento se basear exclusivamente nele, sem prejuízo da execução do contrato enquanto a conta existir;</li>
+        <li>revisão de decisões automatizadas, se vierem a existir (nesta versão o aplicativo não faz perfilagem publicitária nem decisão automatizada de crédito).</li>
+      </ul>
+      <p>Para exercer direitos, identifique-se de forma razoável (por exemplo, pelo e-mail da conta) e descreva o pedido. O administrador deve responder no prazo legal. Esta política <strong>não</strong> publica um e-mail de encarregado inventado: use o canal que o administrador da instância indicar.</p>
+      <p>A Autoridade Nacional de Proteção de Dados (ANPD) é o órgão fiscalizador da LGPD no Brasil.</p>
+
+      <h2>11. Anonimato e texto livre</h2>
+      <p>11.1. A 11ª e a 12ª Tradições de NA pedem anonimato nos meios de comunicação e humildade na prestação de contas. Use o aplicativo de modo compatível com isso.</p>
+      <p>11.2. <strong>Não</strong> escreva em fatos relevantes, descrições de despesa ou nome de grupo informações que identifiquem pessoas em recuperação (nome completo, apelido reconhecível, telefone, foto descrita, etc.), salvo se o seu grupo, de forma consciente e lícita, decidir registrar algo estritamente operacional — e mesmo assim evite dados de saúde ou de recuperação.</p>
+      <p>11.3. O endereço do local de reunião pode ser dado pessoal ou dado de um espaço alugado. Informe o que o grupo já trata como público ou necessário à tesouraria, e nada além disso.</p>
+
+      <h2>12. Menores de idade</h2>
+      <p>12.1. O serviço destina-se a servidores de grupos, não a crianças. Não coletamos intencionalmente dados de menores de 18 anos para criar contas.</p>
+      <p>12.2. Se você souber que um menor cadastrou-se, avise o administrador da instância para que a conta seja encerrada e os dados da conta sejam eliminados, no que for possível.</p>
+
+      <h2>13. Segurança</h2>
+      <p>13.1. Medidas previstas no desenho atual incluem hash de senha, JWT com chave da instância e acesso autenticado aos recursos de tesouraria.</p>
+      <p>13.2. Nenhuma transmissão pela internet é absolutamente segura. O administrador deve proteger <code>JWT_SECRET</code>, o banco PostgreSQL e o acesso ao servidor. Você deve proteger sua senha e o dispositivo.</p>
+      <p>13.3. Em caso de incidente que afete dados pessoais, o administrador deve avaliar o dever de comunicar titulares e a ANPD, nos termos da LGPD.</p>
+
+      <h2>14. Alterações desta política</h2>
+      <p>14.1. Esta política pode ser atualizada. A versão vigente será publicada em <code>/privacidade</code>, com a data de vigência.</p>
+      <p>14.2. A fonte em texto, para quem mantém o software, está em <code>docs/legal/politica-de-privacidade.md</code>. A página pública <code>/privacidade</code> é a versão oponível aos usuários desta instância.</p>
+      <p>14.3. Mudanças relevantes devem ser indicadas de forma razoável. O uso continuado após a nova vigência, quando a lei permitir, implica ciência da versão atual.</p>
+
+      <h2>15. Contato</h2>
+      <p>Para questões de privacidade, direitos do titular ou esta política, fale com o <strong>administrador desta instância</strong> (quem publica e mantém este endereço). Não há, neste documento, e-mail de DPO genérico: o canal válido é o que esse administrador divulgar junto ao grupo ou à instalação.</p>
+
+      <p class="legal-assinatura">Servidor de NA — Política de Privacidade v1.0, 16 de agosto de 2026.</p>
+    </div>
+
+    <nav class="legal-footer" aria-label="Navegação">
+      <a routerLink="/cadastro">Voltar ao cadastro</a>
+      <span aria-hidden="true">·</span>
+      <a routerLink="/login">Ir para o login</a>
+    </nav>
+  </article>
+</div>

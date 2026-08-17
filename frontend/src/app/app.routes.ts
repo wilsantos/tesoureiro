@@ -12,6 +12,7 @@ import { BlankComponent } from './shell/blank.component';
 import { onboardingCompleteGuard } from './guards/onboarding-complete.guard';
 import { appDefaultRedirectGuard } from './guards/app-default-redirect.guard';
 import { OnboardingComponent } from './onboarding/onboarding.component';
+import { DocumentoLegalComponent } from './legal/documento-legal.component';
 
 export const routes: Routes = [
   {
@@ -63,6 +64,16 @@ export const routes: Routes = [
     pathMatch: 'full',
     component: BlankComponent,
     canActivate: [rootRedirectGuard]
+  },
+  {
+    path: 'termos',
+    component: DocumentoLegalComponent,
+    data: { documento: 'termos' }
+  },
+  {
+    path: 'privacidade',
+    component: DocumentoLegalComponent,
+    data: { documento: 'privacidade' }
   },
   {
     path: '**',

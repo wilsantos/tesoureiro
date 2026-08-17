@@ -232,6 +232,43 @@ export class ReuniaoComponent implements OnInit {
     return this.temEncargo(this.reuniao.IdGrupo, 'tesouraria');
   }
 
+  gridTemSecretaria(): boolean {
+    return this.temEncargo(this.filtroGrupo, 'secretaria');
+  }
+
+  gridTemTesouraria(): boolean {
+    return this.temEncargo(this.filtroGrupo, 'tesouraria');
+  }
+
+  exibirGridCompleto(): boolean {
+    return this.gridTemSecretaria() && this.gridTemTesouraria();
+  }
+
+  exibirGridTesouraria(): boolean {
+    return this.gridTemTesouraria() && !this.gridTemSecretaria();
+  }
+
+  exibirGridSecretaria(): boolean {
+    return this.gridTemSecretaria() && !this.gridTemTesouraria();
+  }
+
+  getTotalParticipantes(reuniao: any): number {
+    return (Number(reuniao?.Membros) || 0) + (Number(reuniao?.Visitantes) || 0);
+  }
+
+  getGridColspan(): number {
+    if (this.exibirGridCompleto()) {
+      return 8;
+    }
+    if (this.exibirGridTesouraria()) {
+      return 5;
+    }
+    if (this.exibirGridSecretaria()) {
+      return 4;
+    }
+    return 2;
+  }
+
   selecionarAba(aba: AbaReuniao): void {
     if (aba === 'secretaria' && !this.podeAcessarSecretaria()) {
       return;
@@ -519,18 +556,9 @@ export class ReuniaoComponent implements OnInit {
       : this.apiService.createReuniao(reuniaoParaSalvar);
 
     operacao.subscribe({
-      next: (response) => {
-        const idReuniao = jaPersistida ? this.reuniao.Id : response.id;
-        if (idReuniao) {
-          this.reuniao.Id = idReuniao;
-          this.loadDespesas(idReuniao);
-        }
+      next: () => {
         alert(jaPersistida ? 'Reunião atualizada com sucesso!' : 'Reunião criada com sucesso!');
-        if (!jaPersistida) {
-          this.isEdit = true;
-        } else {
-          this.fecharFormulario();
-        }
+        this.fecharFormulario();
         this.aplicarFiltros();
       },
       error: (error) => {
@@ -604,7 +632,8 @@ export class ReuniaoComponent implements OnInit {
     return this.despesasPorReuniao.get(idReuniao) || 0;
   }
 
-  formatCurrency(value: number): string {
-    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  formatCurrency(value: number | string): string {
+    const numero = this.parseMonetaryValue(value);
+    return numero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 }

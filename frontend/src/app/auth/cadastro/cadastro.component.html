@@ -89,6 +89,36 @@
         </span>
       </div>
 
+      <div class="auth-aceite">
+        <label class="flex items-start gap-2 text-sm text-brand/80 leading-snug cursor-pointer">
+          <input type="checkbox" formControlName="aceiteTermos" class="mt-1 shrink-0 w-4 h-4" />
+          <span>
+            Li e aceito os
+            <a
+              routerLink="/termos"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand font-semibold no-underline hover:underline"
+              (click)="$event.stopPropagation()"
+            >Termos de Serviço</a>
+            e a
+            <a
+              routerLink="/privacidade"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand font-semibold no-underline hover:underline"
+              (click)="$event.stopPropagation()"
+            >Política de Privacidade</a>.
+          </span>
+        </label>
+        <span
+          class="field-error"
+          *ngIf="form.controls.aceiteTermos.touched && form.controls.aceiteTermos.hasError('required')"
+        >
+          É necessário aceitar os Termos de Serviço e a Política de Privacidade para criar a conta.
+        </span>
+      </div>
+
       <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
 
       <button type="submit" class="btn btn-primary auth-submit" [disabled]="isSubmitting">

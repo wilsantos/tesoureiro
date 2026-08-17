@@ -294,25 +294,35 @@
     <table class="reunioes-table">
       <thead>
         <tr>
-          <th class="col-id hidden md:table-cell">ID</th>
-          <th class="col-grupo hidden md:table-cell">Grupo</th>
+          <th *ngIf="exibirGridCompleto()" class="col-id hidden md:table-cell">ID</th>
+          <th *ngIf="exibirGridCompleto()" class="col-grupo hidden md:table-cell">Grupo</th>
           <th class="col-data">Data</th>
-          <th class="col-membros hidden md:table-cell">Membros</th>
-          <th class="col-visitantes hidden md:table-cell">Visitantes</th>
-          <th class="col-total-setima hidden md:table-cell">Total Sétima</th>
-          <th class="col-total-despesas hidden md:table-cell">Total Despesas</th>
+          <th *ngIf="exibirGridCompleto()" class="col-membros hidden md:table-cell">Membros</th>
+          <th *ngIf="exibirGridCompleto()" class="col-visitantes hidden md:table-cell">Visitantes</th>
+          <th *ngIf="exibirGridSecretaria()" class="col-membros hidden md:table-cell">Total de membros</th>
+          <th *ngIf="exibirGridSecretaria()" class="hidden md:table-cell">Total de participantes</th>
+          <th *ngIf="exibirGridCompleto() || exibirGridTesouraria()" class="col-total-setima hidden md:table-cell">
+            {{ exibirGridTesouraria() ? 'Total de Sétima' : 'Total Sétima' }}
+          </th>
+          <th *ngIf="exibirGridTesouraria()" class="hidden md:table-cell">Venda de Literatura</th>
+          <th *ngIf="exibirGridCompleto() || exibirGridTesouraria()" class="col-total-despesas hidden md:table-cell">
+            {{ exibirGridTesouraria() ? 'Total de Despesas' : 'Total Despesas' }}
+          </th>
           <th class="col-acoes">Ações</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let reuniao of reunioes">
-          <td class="col-id hidden md:table-cell">{{ reuniao.Id }}</td>
-          <td class="col-grupo hidden md:table-cell">{{ reuniao.NomeGrupo || getGrupoNome(reuniao.IdGrupo) }}</td>
+          <td *ngIf="exibirGridCompleto()" class="col-id hidden md:table-cell">{{ reuniao.Id }}</td>
+          <td *ngIf="exibirGridCompleto()" class="col-grupo hidden md:table-cell">{{ reuniao.NomeGrupo || getGrupoNome(reuniao.IdGrupo) }}</td>
           <td class="col-data font-semibold md:font-normal">{{ formatDate(reuniao.Data) }}</td>
-          <td class="col-membros hidden md:table-cell">{{ reuniao.Membros }}</td>
-          <td class="col-visitantes hidden md:table-cell">{{ reuniao.Visitantes }}</td>
-          <td class="col-total-setima hidden md:table-cell">R$ {{ formatCurrency(getTotalSetima(reuniao)) }}</td>
-          <td class="col-total-despesas hidden md:table-cell">R$ {{ formatCurrency(getTotalDespesas(reuniao.Id)) }}</td>
+          <td *ngIf="exibirGridCompleto()" class="col-membros hidden md:table-cell">{{ reuniao.Membros }}</td>
+          <td *ngIf="exibirGridCompleto()" class="col-visitantes hidden md:table-cell">{{ reuniao.Visitantes }}</td>
+          <td *ngIf="exibirGridSecretaria()" class="col-membros hidden md:table-cell">{{ reuniao.Membros }}</td>
+          <td *ngIf="exibirGridSecretaria()" class="hidden md:table-cell">{{ getTotalParticipantes(reuniao) }}</td>
+          <td *ngIf="exibirGridCompleto() || exibirGridTesouraria()" class="col-total-setima hidden md:table-cell">R$ {{ formatCurrency(getTotalSetima(reuniao)) }}</td>
+          <td *ngIf="exibirGridTesouraria()" class="hidden md:table-cell">R$ {{ formatCurrency(reuniao.VendaLiteratura) }}</td>
+          <td *ngIf="exibirGridCompleto() || exibirGridTesouraria()" class="col-total-despesas hidden md:table-cell">R$ {{ formatCurrency(getTotalDespesas(reuniao.Id)) }}</td>
           <td class="col-acoes">
             <div class="flex flex-wrap gap-1 md:gap-0">
               <button class="btn btn-success btn-sm flex-1 md:flex-none" (click)="abrirFormulario(reuniao)">Editar</button>
@@ -321,7 +331,7 @@
           </td>
         </tr>
         <tr *ngIf="reunioes.length === 0">
-          <td class="col-data text-center py-5 text-brand/50" colspan="2">
+          <td class="col-data text-center py-5 text-brand/50" [attr.colspan]="getGridColspan()">
             Nenhuma reunião cadastrada
           </td>
         </tr>

@@ -57,6 +57,10 @@ O backend valida `aud` em `api/config/auth.php` (`validateGoogleIdToken`). Qualq
 4. **Não** use `http://` em produção se o site é `https://`.
 5. Salve e aguarde 1–5 minutos para propagar.
 6. (Opcional) Em **OAuth consent screen**, confirme que o app está em **Testing** ou **Production** e que o e-mail do usuário está autorizado se ainda em modo teste.
+7. No **OAuth consent screen**, as URLs públicas (acessíveis **sem login**) são:
+   - Privacy policy: `https://<dominio>/privacidade`
+   - Terms of service: `https://<dominio>/termos`  
+   Textos-fonte: `docs/legal/`. Decisão: [20260816-termos-privacidade-cadastro.md](../decisoes/20260816-termos-privacidade-cadastro.md).
 
 ### 4. DevTools do navegador (aba Login)
 

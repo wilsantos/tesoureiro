@@ -43,7 +43,8 @@ export class CadastroComponent {
       nome: ['', [Validators.required, Validators.maxLength(200)]],
       email: ['', [Validators.required, Validators.email]],
       senha: ['', [Validators.required, Validators.minLength(8)]],
-      confirmarSenha: ['', [Validators.required]]
+      confirmarSenha: ['', [Validators.required]],
+      aceiteTermos: [false, [Validators.requiredTrue]]
     },
     { validators: senhasIguaisValidator }
   );

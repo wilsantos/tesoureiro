@@ -1,1 +1,13 @@
-/* Estilos de cadastro cobertos por classes globais Tailwind */
+.auth-aceite {
+  margin-bottom: 1.25rem;
+}
+
+.auth-aceite a {
+  color: #211E70;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-aceite a:hover {
+  text-decoration: underline;
+}
