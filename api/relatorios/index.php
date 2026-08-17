@@ -47,7 +47,7 @@ switch ($method) {
             $mes = $_GET['mes'];
             $ano = $_GET['ano'];
 
-            requireAcessoGrupo($conn, $usuario['Id'], $idGrupo);
+            requireEncargoGrupo($conn, $usuario['Id'], $idGrupo, 'tesouraria');
             
             try {
                 // Buscar dados do grupo (Saldo inicial e DataSaldo)
@@ -195,10 +195,9 @@ switch ($method) {
         $mes = $_GET['mes'];
         $ano = $_GET['ano'];
 
-        requireAcessoGrupo($conn, $usuario['Id'], $idGrupo);
-
         try {
             if ($tipo === 'geral') {
+                requireEncargoGrupo($conn, $usuario['Id'], $idGrupo, 'secretaria');
                 // Relatório Geral de Reuniões - Apenas Totais do Mês
                 
                 // Buscar nome do grupo
@@ -288,6 +287,7 @@ switch ($method) {
                 ], JSON_UNESCAPED_UNICODE);
 
             } else if ($tipo === 'detalhado') {
+                requireEncargoGrupo($conn, $usuario['Id'], $idGrupo, 'tesouraria');
                 // Relatório Detalhado de Sétima e Despesas
                 $stmt = $conn->prepare("
                     SELECT 

@@ -6,22 +6,27 @@
   <div class="info-box">
     <p class="m-0">
       Selecione o tipo de relatório, grupo, mês e ano para gerar o relatório.
+      O relatório geral exige encargo de secretaria; o detalhado de sétima, encargo de tesouraria.
     </p>
+  </div>
+
+  <div *ngIf="filtroGrupo && !podeGerarAlgumRelatorio()" class="info-box info-box-danger mb-4">
+    Você não possui encargo ativo neste grupo para gerar relatórios.
   </div>
 
   <div class="form-container mb-8">
     <div class="form-row form-row-duas-colunas">
       <div class="form-group">
         <label>Tipo de Relatório *</label>
-        <select [(ngModel)]="tipoRelatorio">
-          <option value="geral">Relatório Geral de Reuniões</option>
-          <option value="detalhado">Relatório Detalhado de Sétima e Despesas</option>
+        <select [(ngModel)]="tipoRelatorio" [disabled]="!filtroGrupo || !podeGerarAlgumRelatorio()">
+          <option *ngIf="podeGerarGeral()" value="geral">Relatório Geral de Reuniões</option>
+          <option *ngIf="podeGerarDetalhado()" value="detalhado">Relatório Detalhado de Sétima e Despesas</option>
         </select>
       </div>
 
       <div class="form-group">
         <label>Grupo *</label>
-        <select [(ngModel)]="filtroGrupo">
+        <select [(ngModel)]="filtroGrupo" (ngModelChange)="aoMudarGrupo()">
           <option [value]="null">Selecione o grupo</option>
           <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
         </select>
@@ -45,7 +50,7 @@
     </div>
 
     <div class="flex flex-wrap gap-2 mt-5">
-      <button class="btn btn-primary m-0" (click)="gerarRelatorio()" [disabled]="carregando">
+      <button class="btn btn-primary m-0" (click)="gerarRelatorio()" [disabled]="carregando || !podeGerarTipoSelecionado()">
         {{ carregando ? 'Gerando...' : 'Gerar Relatório' }}
       </button>
       <button *ngIf="relatorioGeral || relatorioDetalhado" class="btn btn-secondary m-0" (click)="imprimirRelatorio()">

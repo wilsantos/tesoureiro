@@ -268,6 +268,39 @@ function requireAcessoGrupo(PDO $conn, int $usuarioId, int $grupoId): void
     }
 }
 
+function usuarioTemEncargoGrupo(PDO $conn, int $usuarioId, int $grupoId, string $papel): bool
+{
+    $papel = validarPapel($papel);
+    if ($papel === null) {
+        return false;
+    }
+
+    $stmt = $conn->prepare(
+        'SELECT 1 FROM usuario_grupo
+         WHERE "Usuario" = ? AND "Grupo" = ? AND "Papel" = ? AND "Ativo" = true
+         LIMIT 1'
+    );
+    $stmt->execute([$usuarioId, $grupoId, $papel]);
+
+    return (bool) $stmt->fetch();
+}
+
+function requireEncargoGrupo(PDO $conn, int $usuarioId, int $grupoId, string $papel): void
+{
+    requireAcessoGrupo($conn, $usuarioId, $grupoId);
+
+    if (!usuarioTemEncargoGrupo($conn, $usuarioId, $grupoId, $papel)) {
+        $label = $papel === 'secretaria' ? 'secretaria' : 'tesouraria';
+        http_response_code(403);
+        echo json_encode([
+            'message' => "Você não possui encargo de {$label} neste grupo para acessar este relatório",
+            'error' => 'encargo_insuficiente',
+            'Papel' => $papel,
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
 function listarGruposUsuario(PDO $conn, int $usuarioId): array
 {
     $stmt = $conn->prepare(
