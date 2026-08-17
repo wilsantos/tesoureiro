@@ -52,11 +52,13 @@
         </div>
 
         <div class="form-group">
-          <label>CSA *</label>
-          <select [(ngModel)]="grupo.CSA" required>
-            <option value="">Selecione um CSA</option>
-            <option *ngFor="let csa of csas" [value]="csa.Id">{{ csa.Nome }}</option>
-          </select>
+          <label for="grupo-csa">CSA *</label>
+          <app-csa-autocomplete
+            [(ngModel)]="grupo.CSA"
+            inputId="grupo-csa"
+            placeholder="Digite região ou comunidade..."
+            [required]="true"
+          ></app-csa-autocomplete>
         </div>
 
         <div class="form-row">

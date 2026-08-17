@@ -1,0 +1,39 @@
+.csa-autocomplete {
+  @apply relative;
+}
+
+.csa-input-row {
+  @apply flex gap-2 items-stretch;
+}
+
+.csa-input {
+  @apply w-full px-3 py-2.5 border border-surface-border rounded-md text-sm bg-surface text-brand focus:outline-none focus:ring-2 focus:ring-accent focus:border-brand;
+}
+
+.csa-clear-btn {
+  @apply shrink-0 m-0 self-stretch;
+}
+
+.csa-hint {
+  @apply text-xs text-brand/50 mt-1.5 mb-0;
+}
+
+.csa-status {
+  @apply text-xs text-brand/60 mt-1.5 mb-0;
+}
+
+.csa-error {
+  @apply text-xs text-red-600 mt-1.5 mb-0;
+}
+
+.csa-dropdown {
+  @apply absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-surface border border-surface-border rounded-md shadow-lg list-none p-0 m-0;
+}
+
+.csa-dropdown-item {
+  @apply px-3 py-2.5 text-sm text-brand cursor-pointer hover:bg-surface-muted border-b border-surface-border last:border-b-0;
+}
+
+.csa-dropdown-empty {
+  @apply px-3 py-2.5 text-sm text-brand/50 italic;
+}

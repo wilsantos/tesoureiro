@@ -2,9 +2,10 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { debounceTime, distinctUntilChanged, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, merge, Subscription } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
+import { CsaAutocompleteComponent } from '../components/csa-autocomplete/csa-autocomplete.component';
 import { GrupoListItem } from '../models/grupo.model';
 import {
   EncargoPreenchidoError,
@@ -38,7 +39,7 @@ const PAGE_SIZE = 30;
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CsaAutocompleteComponent],
   templateUrl: './onboarding.component.html',
   styleUrl: './onboarding.component.css'
 })
@@ -50,13 +51,11 @@ export class OnboardingComponent implements OnInit, OnDestroy {
   private filterSubscription?: Subscription;
 
   gruposVisiveis: GrupoListItem[] = [];
-  csas: any[] = [];
   selecionados: Record<number, GrupoSelecao> = {};
   novosGrupos: NovoGrupoPendente[] = [];
   vinculosAtivos: GrupoVinculo[] = [];
 
-  isLoadingCsas = true;
-  isLoadingGrupos = false;
+  isLoadingGrupos = true;
   isSubmitting = false;
   encerrandoGrupoId: number | null = null;
   errorMessage = '';
@@ -89,29 +88,18 @@ export class OnboardingComponent implements OnInit, OnDestroy {
       this.vinculosAtivos = usuario?.Grupos ?? [];
     });
 
-    this.api.getCSAs().subscribe({
-      next: (data) => {
-        this.csas = data;
-        this.isLoadingCsas = false;
-      },
-      error: () => {
-        this.errorMessage = 'Não foi possível carregar as CSAs.';
-        this.isLoadingCsas = false;
-      }
-    });
-
-    this.filterSubscription = this.filterForm.get('busca')!.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
+    this.filterSubscription = merge(
+      this.filterForm.get('csa')!.valueChanges,
+      this.filterForm.get('busca')!.valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      )
     ).subscribe(() => {
       this.pageOffset = 0;
       this.carregarGrupos();
     });
 
-    this.filterForm.get('csa')!.valueChanges.subscribe(() => {
-      this.pageOffset = 0;
-      this.carregarGrupos();
-    });
+    this.carregarGrupos();
   }
 
   ngOnDestroy(): void {
@@ -153,7 +141,7 @@ export class OnboardingComponent implements OnInit, OnDestroy {
     return this.pageOffset > 0;
   }
 
-  get temFiltroGrupos(): boolean {
+  get temFiltroAtivo(): boolean {
     const csa = Number(this.filterForm.value.csa);
     const busca = (this.filterForm.value.busca ?? '').trim();
     return csa > 0 || busca.length > 0;
@@ -162,12 +150,6 @@ export class OnboardingComponent implements OnInit, OnDestroy {
   carregarGrupos(): void {
     const csa = Number(this.filterForm.value.csa);
     const busca = (this.filterForm.value.busca ?? '').trim();
-
-    if (csa <= 0 && busca === '') {
-      this.gruposVisiveis = [];
-      this.totalGrupos = 0;
-      return;
-    }
 
     this.isLoadingGrupos = true;
     this.errorMessage = '';

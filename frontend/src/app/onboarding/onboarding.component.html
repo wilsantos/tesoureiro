@@ -56,13 +56,14 @@
     <h3 class="text-sm font-semibold text-brand mb-3">Adicionar encargos</h3>
 
     <div class="mb-4 p-4 bg-surface-muted rounded-md border border-surface-border" [formGroup]="filterForm">
-      <div class="grid grid-cols-1 md:grid-cols-[minmax(200px,280px)_1fr] gap-4 items-end">
+      <div class="grid grid-cols-1 md:grid-cols-[minmax(200px,280px)_1fr] gap-4 items-start">
         <div class="form-group mb-0">
           <label for="filtro-csa">CSA</label>
-          <select id="filtro-csa" formControlName="csa">
-            <option [ngValue]="0">Todas as CSAs</option>
-            <option *ngFor="let csa of csas" [ngValue]="csa.Id">{{ csa.Nome }}</option>
-          </select>
+          <app-csa-autocomplete
+            formControlName="csa"
+            inputId="filtro-csa"
+            placeholder="Digite região ou comunidade..."
+          ></app-csa-autocomplete>
         </div>
         <div class="form-group mb-0">
           <label for="filtro-busca">Buscar grupo</label>
@@ -83,18 +84,14 @@
           </div>
         </div>
       </div>
-      <p class="text-xs text-brand/50 mt-2.5 mb-0" *ngIf="!temFiltroGrupos">
-        Selecione uma CSA ou digite o nome do grupo para listar os resultados.
-      </p>
     </div>
 
     <p class="success-message" *ngIf="successMessage">{{ successMessage }}</p>
     <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-    <div *ngIf="isLoadingCsas" class="text-brand/60 py-4">Carregando CSAs...</div>
-    <div *ngIf="temFiltroGrupos && isLoadingGrupos" class="text-brand/60 py-4">Carregando grupos...</div>
+    <div *ngIf="isLoadingGrupos" class="text-brand/60 py-4">Carregando grupos...</div>
 
-    <div *ngIf="temFiltroGrupos && !isLoadingGrupos" class="mb-2">
+    <div *ngIf="!isLoadingGrupos" class="mb-2">
       <div class="flex justify-end mb-2">
         <span class="text-xs text-brand/60" *ngIf="totalGrupos > 0">
           {{ pageInicio }}–{{ pageFim }} de {{ totalGrupos }}
@@ -102,7 +99,7 @@
       </div>
 
       <div *ngIf="totalGrupos === 0" class="p-6 text-center text-brand/50 bg-surface-muted rounded-md border border-dashed border-surface-border">
-        Nenhum grupo encontrado para os filtros selecionados.
+        {{ temFiltroAtivo ? 'Nenhum grupo encontrado para os filtros selecionados.' : 'Nenhum grupo cadastrado.' }}
       </div>
 
       <div class="data-grid grupos-grid" *ngIf="totalGrupos > 0">
@@ -153,7 +150,7 @@
     <button
       type="button"
       class="btn btn-primary m-0"
-      [disabled]="isSubmitting || isLoadingCsas"
+      [disabled]="isSubmitting"
       (click)="onSubmit()"
     >
       {{ isSubmitting ? 'Salvando...' : submitLabel }}
@@ -178,10 +175,12 @@
 
       <div class="form-group">
         <label for="csa">CSA *</label>
-        <select id="csa" formControlName="csa">
-          <option [ngValue]="0">Selecione...</option>
-          <option *ngFor="let csa of csas" [ngValue]="csa.Id">{{ csa.Nome }}</option>
-        </select>
+        <app-csa-autocomplete
+          formControlName="csa"
+          inputId="csa"
+          placeholder="Digite região ou comunidade..."
+          [required]="true"
+        ></app-csa-autocomplete>
       </div>
 
       <div class="form-group flex flex-wrap gap-3 items-center">

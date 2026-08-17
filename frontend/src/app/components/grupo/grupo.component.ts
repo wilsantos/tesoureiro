@@ -2,17 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { CsaAutocompleteComponent } from '../csa-autocomplete/csa-autocomplete.component';
 
 @Component({
   selector: 'app-grupo',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CsaAutocompleteComponent],
   templateUrl: './grupo.component.html',
   styleUrl: './grupo.component.css'
 })
 export class GrupoComponent implements OnInit {
   grupos: any[] = [];
-  csas: any[] = [];
   grupo: any = {
     Id: null,
     Nome: '',
@@ -28,7 +28,6 @@ export class GrupoComponent implements OnInit {
 
   ngOnInit() {
     this.loadGrupos();
-    this.loadCSAs();
   }
 
   loadGrupos() {
@@ -39,18 +38,6 @@ export class GrupoComponent implements OnInit {
       error: (error) => {
         console.error('Erro ao carregar grupos:', error);
         alert('Erro ao carregar grupos');
-      }
-    });
-  }
-
-  loadCSAs() {
-    this.apiService.getCSAs().subscribe({
-      next: (data) => {
-        this.csas = data;
-      },
-      error: (error) => {
-        console.error('Erro ao carregar CSAs:', error);
-        alert('Erro ao carregar CSAs');
       }
     });
   }
