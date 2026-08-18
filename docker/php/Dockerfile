@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     curl \
     unzip \
+    tzdata \
     && docker-php-ext-install pdo pdo_pgsql \
     && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*

@@ -8,6 +8,10 @@
   grid-template-columns: 1.2fr 2fr 100px 100px;
 }
 
+.grupos-grid .grupo-papel-text {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .encargos-grid .grid-header,
   .encargos-grid .grid-row,
@@ -25,5 +29,17 @@
   .encargos-grid .grid-row,
   .grupos-grid .grid-row {
     padding: 12px;
+  }
+
+  .grupos-grid .grupo-papel-checkbox {
+    text-align: left;
+  }
+
+  .grupos-grid .grupo-papel-label {
+    justify-content: flex-start;
+  }
+
+  .grupos-grid .grupo-papel-text {
+    display: inline;
   }
 }

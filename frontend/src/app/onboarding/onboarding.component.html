@@ -112,21 +112,27 @@
         <div class="grid-row" *ngFor="let grupo of gruposVisiveis">
           <span class="text-brand/60 text-xs">{{ grupo.CSA_Nome }}</span>
           <span class="font-medium">{{ grupo.Nome }}</span>
-          <span class="text-center">
-            <input
-              type="checkbox"
-              [checked]="isPapelMarcado(grupo.Id, 'secretaria')"
-              [disabled]="isPapelDesabilitado(grupo.Id, 'secretaria')"
-              (change)="alterarPapel(grupo, 'secretaria', $any($event.target).checked)"
-            />
+          <span class="text-center grupo-papel-checkbox">
+            <label class="grupo-papel-label inline-flex items-center gap-2 justify-center cursor-pointer">
+              <input
+                type="checkbox"
+                [checked]="isPapelMarcado(grupo.Id, 'secretaria')"
+                [disabled]="isPapelDesabilitado(grupo.Id, 'secretaria')"
+                (change)="alterarPapel(grupo, 'secretaria', $any($event.target).checked)"
+              />
+              <span class="grupo-papel-text">Secretaria</span>
+            </label>
           </span>
-          <span class="text-center">
-            <input
-              type="checkbox"
-              [checked]="isPapelMarcado(grupo.Id, 'tesouraria')"
-              [disabled]="isPapelDesabilitado(grupo.Id, 'tesouraria')"
-              (change)="alterarPapel(grupo, 'tesouraria', $any($event.target).checked)"
-            />
+          <span class="text-center grupo-papel-checkbox">
+            <label class="grupo-papel-label inline-flex items-center gap-2 justify-center cursor-pointer">
+              <input
+                type="checkbox"
+                [checked]="isPapelMarcado(grupo.Id, 'tesouraria')"
+                [disabled]="isPapelDesabilitado(grupo.Id, 'tesouraria')"
+                (change)="alterarPapel(grupo, 'tesouraria', $any($event.target).checked)"
+              />
+              <span class="grupo-papel-text">Tesouraria</span>
+            </label>
           </span>
         </div>
       </div>
