@@ -7,13 +7,20 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
+      TZ: ${TZ:-}
       DB_HOST: ${DB_HOST:-host.docker.internal}
       DB_PORT: ${DB_PORT:-5432}
       DB_NAME: ${DB_NAME:-tesouraria}
       DB_USER: ${DB_USER:-tesoureiro}
       DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-28800}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      CADASTRO_ABERTO: ${CADASTRO_ABERTO:-true}
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/grupo/"]
+      test: ["CMD", "curl", "-f", "http://localhost/test.php"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -24,16 +31,24 @@ services:
       context: .
       dockerfile: docker/nginx/Dockerfile
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-}
     volumes:
       - ./frontend/publish:/usr/share/nginx/html:ro
+      - /etc/timezone:/etc/timezone:ro
 
   gateway:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: docker/gateway/Dockerfile
     restart: unless-stopped
+    environment:
+      TZ: ${TZ:-}
     ports:
       - "${APP_PORT:-8099}:80"
     volumes:
       - ./docker/nginx/gateway.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/timezone:/etc/timezone:ro
     depends_on:
       api:
         condition: service_healthy

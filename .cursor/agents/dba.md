@@ -34,7 +34,7 @@ Tabelas atuais: `csa`, `grupo`, `reuniao`, `despesas`.
 - Referência de schema: `docker/postgres/init/01-schema.sql`
 - Histórico de migrações: `database/YYYYMMDD_descricao.sql`
 
-Há dumps MySQL antigos em `database/`. Novos scripts são PostgreSQL. Só gere MySQL se o usuário pedir compatibilidade explícita.
+Todos os scripts novos em `database/` são PostgreSQL. Dumps históricos podem existir no repositório; não os edite sem pedido explícito do usuário.
 
 ## Onde gravar
 

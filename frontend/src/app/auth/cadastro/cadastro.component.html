@@ -1,0 +1,134 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Servidor de NA</h1>
+    <h2>Criar conta</h2>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="nome">Nome *</label>
+        <input id="nome" type="text" formControlName="nome" autocomplete="name" />
+        <span class="field-error" *ngIf="form.controls.nome.touched && form.controls.nome.hasError('required')">
+          Informe o nome.
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-mail *</label>
+        <input id="email" type="email" formControlName="email" autocomplete="email" />
+        <span class="field-error" *ngIf="form.controls.email.touched && form.controls.email.hasError('required')">
+          Informe o e-mail.
+        </span>
+        <span class="field-error" *ngIf="form.controls.email.touched && form.controls.email.hasError('email')">
+          E-mail inválido.
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="senha">Senha *</label>
+        <div class="relative">
+          <input
+            id="senha"
+            class="pr-11"
+            [type]="showSenha ? 'text' : 'password'"
+            formControlName="senha"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="absolute top-1/2 right-2 -translate-y-1/2 flex items-center justify-center w-8 h-8 p-0 border-0 rounded bg-transparent text-brand/60 cursor-pointer hover:text-brand hover:bg-surface-muted"
+            (click)="showSenha = !showSenha"
+            [attr.aria-label]="showSenha ? 'Ocultar senha' : 'Mostrar senha'"
+            [attr.aria-pressed]="showSenha"
+          >
+            <svg *ngIf="!showSenha" class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
+            </svg>
+            <svg *ngIf="showSenha" class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 7a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5zm8.94 5a11.9 11.9 0 0 1-2.64 3.54l1.42 1.42A14 14 0 0 0 23 12c-1.73-3.89-6-7-11-7a12.7 12.7 0 0 0-2.64.28l1.56 1.56A9.9 9.9 0 0 1 12 5c3.87 0 7.26 2.08 8.94 5zM3.06 7l1.42 1.42A11.9 11.9 0 0 0 1 12c1.73 3.89 6 7 11 7a12.7 12.7 0 0 0 2.64-.28l1.56-1.56A9.9 9.9 0 0 1 12 19c-3.87 0-7.26-2.08-8.94-5L3.06 7z"/>
+            </svg>
+          </button>
+        </div>
+        <span class="field-error" *ngIf="form.controls.senha.touched && form.controls.senha.hasError('required')">
+          Informe a senha.
+        </span>
+        <span class="field-error" *ngIf="form.controls.senha.touched && form.controls.senha.hasError('minlength')">
+          A senha deve ter no mínimo 8 caracteres.
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmarSenha">Confirmar senha *</label>
+        <div class="relative">
+          <input
+            id="confirmarSenha"
+            class="pr-11"
+            [type]="showConfirmarSenha ? 'text' : 'password'"
+            formControlName="confirmarSenha"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="absolute top-1/2 right-2 -translate-y-1/2 flex items-center justify-center w-8 h-8 p-0 border-0 rounded bg-transparent text-brand/60 cursor-pointer hover:text-brand hover:bg-surface-muted"
+            (click)="showConfirmarSenha = !showConfirmarSenha"
+            [attr.aria-label]="showConfirmarSenha ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'"
+            [attr.aria-pressed]="showConfirmarSenha"
+          >
+            <svg *ngIf="!showConfirmarSenha" class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
+            </svg>
+            <svg *ngIf="showConfirmarSenha" class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 7a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5zm8.94 5a11.9 11.9 0 0 1-2.64 3.54l1.42 1.42A14 14 0 0 0 23 12c-1.73-3.89-6-7-11-7a12.7 12.7 0 0 0-2.64.28l1.56 1.56A9.9 9.9 0 0 1 12 5c3.87 0 7.26 2.08 8.94 5zM3.06 7l1.42 1.42A11.9 11.9 0 0 0 1 12c1.73 3.89 6 7 11 7a12.7 12.7 0 0 0 2.64-.28l1.56-1.56A9.9 9.9 0 0 1 12 19c-3.87 0-7.26-2.08-8.94-5L3.06 7z"/>
+            </svg>
+          </button>
+        </div>
+        <span class="field-error" *ngIf="form.controls.confirmarSenha.touched && form.controls.confirmarSenha.hasError('required')">
+          Confirme a senha.
+        </span>
+        <span class="field-error" *ngIf="form.controls.confirmarSenha.touched && form.hasError('senhasDiferentes')">
+          As senhas não coincidem.
+        </span>
+      </div>
+
+      <div class="auth-aceite">
+        <label class="flex items-start gap-2 text-sm text-brand/80 leading-snug cursor-pointer">
+          <input type="checkbox" formControlName="aceiteTermos" class="mt-1 shrink-0 w-4 h-4" />
+          <span>
+            Li e aceito os
+            <a
+              routerLink="/termos"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand font-semibold no-underline hover:underline"
+              (click)="$event.stopPropagation()"
+            >Termos de Serviço</a>
+            e a
+            <a
+              routerLink="/privacidade"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand font-semibold no-underline hover:underline"
+              (click)="$event.stopPropagation()"
+            >Política de Privacidade</a>.
+          </span>
+        </label>
+        <span
+          class="field-error"
+          *ngIf="form.controls.aceiteTermos.touched && form.controls.aceiteTermos.hasError('required')"
+        >
+          É necessário aceitar os Termos de Serviço e a Política de Privacidade para criar a conta.
+        </span>
+      </div>
+
+      <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+      <button type="submit" class="btn btn-primary auth-submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Cadastrando...' : 'Cadastrar' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Já tem conta?
+      <a routerLink="/login">Entrar</a>
+    </p>
+  </div>
+</div>

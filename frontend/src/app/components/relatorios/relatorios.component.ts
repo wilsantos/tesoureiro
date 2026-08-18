@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
+import { PapelGrupo } from '../../models/usuario.model';
 import { asBlob } from 'html-docx-js-typescript';
 
 @Component({
@@ -22,7 +24,10 @@ export class RelatoriosComponent implements OnInit {
   saldoAcumulado: any = null;
   carregando: boolean = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     this.loadGrupos();
@@ -36,6 +41,10 @@ export class RelatoriosComponent implements OnInit {
     this.apiService.getGrupos().subscribe({
       next: (data) => {
         this.grupos = data;
+        if (this.grupos.length === 1) {
+          this.filtroGrupo = this.grupos[0].Id;
+          this.ajustarTipoRelatorio();
+        }
       },
       error: (error) => {
         console.error('Erro ao carregar grupos:', error);
@@ -44,9 +53,72 @@ export class RelatoriosComponent implements OnInit {
     });
   }
 
+  aoMudarGrupo(): void {
+    this.relatorioGeral = null;
+    this.relatorioDetalhado = null;
+    this.saldoAcumulado = null;
+    this.ajustarTipoRelatorio();
+  }
+
+  temEncargo(grupoId: number | null, papel: PapelGrupo): boolean {
+    if (!grupoId) {
+      return false;
+    }
+
+    const id = Number(grupoId);
+    const grupos = this.authService.getUsuario()?.Grupos ?? [];
+    return grupos.some(
+      (vinculo) => vinculo.GrupoId === id && vinculo.Papel === papel && vinculo.Ativo !== false
+    );
+  }
+
+  podeGerarGeral(): boolean {
+    return this.temEncargo(this.filtroGrupo, 'secretaria');
+  }
+
+  podeGerarDetalhado(): boolean {
+    return this.temEncargo(this.filtroGrupo, 'tesouraria');
+  }
+
+  podeGerarAlgumRelatorio(): boolean {
+    return this.podeGerarGeral() || this.podeGerarDetalhado();
+  }
+
+  podeGerarTipoSelecionado(): boolean {
+    if (this.tipoRelatorio === 'geral') {
+      return this.podeGerarGeral();
+    }
+    if (this.tipoRelatorio === 'detalhado') {
+      return this.podeGerarDetalhado();
+    }
+    return false;
+  }
+
+  private ajustarTipoRelatorio(): void {
+    const podeGeral = this.podeGerarGeral();
+    const podeDetalhado = this.podeGerarDetalhado();
+
+    if (this.tipoRelatorio === 'geral' && podeGeral) {
+      return;
+    }
+    if (this.tipoRelatorio === 'detalhado' && podeDetalhado) {
+      return;
+    }
+    if (podeGeral) {
+      this.tipoRelatorio = 'geral';
+    } else if (podeDetalhado) {
+      this.tipoRelatorio = 'detalhado';
+    }
+  }
+
   gerarRelatorio() {
     if (!this.filtroGrupo || !this.filtroMes || !this.filtroAno) {
       alert('Preencha todos os filtros (Grupo, Mês e Ano)');
+      return;
+    }
+
+    if (!this.podeGerarTipoSelecionado()) {
+      alert('Você não possui o encargo necessário para gerar este relatório neste grupo.');
       return;
     }
 
@@ -275,7 +347,6 @@ export class RelatoriosComponent implements OnInit {
         <tr><td>Saldo Final do Mês</td><td class="destaque">R$ ${this.formatCurrency(sa.saldoFinal)}</td></tr>`;
     }
 
-    debugger;
     const tabelaTotais = `
       ${this.h3('Totais do Mês')}
       <table>

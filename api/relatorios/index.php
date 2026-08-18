@@ -10,6 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+require_once __DIR__ . '/../config/auth.php';
+$usuario = requireAuth();
+
 require_once '../config/database.php';
 
 // Habilitar exibição de erros para debug (remover em produção se necessário)
@@ -28,6 +31,8 @@ try {
     exit;
 }
 
+requireOnboardingComplete($conn, $usuario['Id']);
+
 switch ($method) {
     case 'GET':
         // Verificar se é o endpoint de saldo acumulado (não precisa de mes/ano)
@@ -38,9 +43,11 @@ switch ($method) {
                 break;
             }
             
-            $idGrupo = $_GET['IdGrupo'];
+            $idGrupo = (int) $_GET['IdGrupo'];
             $mes = $_GET['mes'];
             $ano = $_GET['ano'];
+
+            requireEncargoGrupo($conn, $usuario['Id'], $idGrupo, 'tesouraria');
             
             try {
                 // Buscar dados do grupo (Saldo inicial e DataSaldo)
@@ -184,12 +191,13 @@ switch ($method) {
         }
 
         $tipo = $_GET['tipo'];
-        $idGrupo = $_GET['IdGrupo'];
+        $idGrupo = (int) $_GET['IdGrupo'];
         $mes = $_GET['mes'];
         $ano = $_GET['ano'];
 
         try {
             if ($tipo === 'geral') {
+                requireEncargoGrupo($conn, $usuario['Id'], $idGrupo, 'secretaria');
                 // Relatório Geral de Reuniões - Apenas Totais do Mês
                 
                 // Buscar nome do grupo
@@ -279,6 +287,7 @@ switch ($method) {
                 ], JSON_UNESCAPED_UNICODE);
 
             } else if ($tipo === 'detalhado') {
+                requireEncargoGrupo($conn, $usuario['Id'], $idGrupo, 'tesouraria');
                 // Relatório Detalhado de Sétima e Despesas
                 $stmt = $conn->prepare("
                     SELECT 

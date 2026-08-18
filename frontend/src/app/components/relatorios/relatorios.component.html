@@ -1,27 +1,32 @@
 <div>
-  <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2>Relatórios</h2>
+  <div class="header-actions flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">
+    <h2 class="text-xl font-semibold">Relatórios</h2>
   </div>
 
-  <div class="info-box" style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-    <p style="margin: 0; color: #666;">
+  <div class="info-box">
+    <p class="m-0">
       Selecione o tipo de relatório, grupo, mês e ano para gerar o relatório.
+      O relatório geral exige encargo de secretaria; o detalhado de sétima, encargo de tesouraria.
     </p>
   </div>
 
-  <div class="form-container" style="margin-bottom: 30px;">
+  <div *ngIf="filtroGrupo && !podeGerarAlgumRelatorio()" class="info-box info-box-danger mb-4">
+    Você não possui encargo ativo neste grupo para gerar relatórios.
+  </div>
+
+  <div class="form-container mb-8">
     <div class="form-row form-row-duas-colunas">
       <div class="form-group">
         <label>Tipo de Relatório *</label>
-        <select [(ngModel)]="tipoRelatorio" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-          <option value="geral">Relatório Geral de Reuniões</option>
-          <option value="detalhado">Relatório Detalhado de Sétima e Despesas</option>
+        <select [(ngModel)]="tipoRelatorio" [disabled]="!filtroGrupo || !podeGerarAlgumRelatorio()">
+          <option *ngIf="podeGerarGeral()" value="geral">Relatório Geral de Reuniões</option>
+          <option *ngIf="podeGerarDetalhado()" value="detalhado">Relatório Detalhado de Sétima e Despesas</option>
         </select>
       </div>
 
       <div class="form-group">
         <label>Grupo *</label>
-        <select [(ngModel)]="filtroGrupo" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <select [(ngModel)]="filtroGrupo" (ngModelChange)="aoMudarGrupo()">
           <option [value]="null">Selecione o grupo</option>
           <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
         </select>
@@ -29,7 +34,7 @@
 
       <div class="form-group">
         <label>Mês *</label>
-        <select [(ngModel)]="filtroMes" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <select [(ngModel)]="filtroMes">
           <option [value]="null">Selecione o mês</option>
           <option *ngFor="let mes of getMeses()" [value]="mes.valor">{{ mes.nome }}</option>
         </select>
@@ -37,27 +42,26 @@
 
       <div class="form-group">
         <label>Ano *</label>
-        <select [(ngModel)]="filtroAno" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <select [(ngModel)]="filtroAno">
           <option [value]="null">Selecione o ano</option>
           <option *ngFor="let ano of getAnos()" [value]="ano">{{ ano }}</option>
         </select>
       </div>
     </div>
 
-    <div style="margin-top: 20px;">
-      <button class="btn btn-primary" (click)="gerarRelatorio()" [disabled]="carregando">
+    <div class="flex flex-wrap gap-2 mt-5">
+      <button class="btn btn-primary m-0" (click)="gerarRelatorio()" [disabled]="carregando || !podeGerarTipoSelecionado()">
         {{ carregando ? 'Gerando...' : 'Gerar Relatório' }}
       </button>
-      <button *ngIf="relatorioGeral || relatorioDetalhado" class="btn btn-secondary" (click)="imprimirRelatorio()" style="margin-left: 10px;">
+      <button *ngIf="relatorioGeral || relatorioDetalhado" class="btn btn-secondary m-0" (click)="imprimirRelatorio()">
         Imprimir
       </button>
-      <button *ngIf="relatorioGeral || relatorioDetalhado" class="btn btn-success" (click)="exportarParaWord()" style="margin-left: 10px;">
+      <button *ngIf="relatorioGeral || relatorioDetalhado" class="btn btn-success m-0" (click)="exportarParaWord()">
         Exportar para Word
       </button>
     </div>
   </div>
 
-  <!-- Relatório Geral -->
   <div *ngIf="relatorioGeral" class="relatorio-container">
     <div class="relatorio-header">
       <h2>Relatório Geral de Reuniões</h2>
@@ -80,7 +84,7 @@
           <label>Total de Visitantes</label>
           <span class="valor">{{ relatorioGeral.totais.TotalVisitantes }}</span>
         </div>
-    </div>
+      </div>
     </div>
 
     <div class="totais-box">
@@ -105,8 +109,7 @@
       </div>
     </div>
 
-
-    <div class="totais-box" style="margin-top: 30px;">
+    <div class="totais-box mt-8">
       <h3>Trocas de Fichas</h3>
       <div class="totais-grid">
         <div class="total-item">
@@ -149,7 +152,6 @@
     </div>
   </div>
 
-  <!-- Relatório Detalhado -->
   <div *ngIf="relatorioDetalhado" class="relatorio-container">
     <div class="relatorio-header">
       <h2>Relatório Detalhado de Sétima e Despesas</h2>
@@ -199,77 +201,79 @@
       </div>
     </div>
 
-    <!-- Tabela de Saldo Acumulado -->
-    <div *ngIf="saldoAcumulado" class="saldo-acumulado-box" style="margin-top: 30px; margin-bottom: 30px;">
-      <h3>Saldo Acumulado - {{ getNomeMes(relatorioDetalhado.mes) }} de {{ relatorioDetalhado.ano }}</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>7a. Dinheiro</th>
-            <th>7a. Pix</th>
-            <th>Venda Lit.</th>
-            <th>Total</th>
-            <th>Despesas</th>
-            <th>Saldo Acumulado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of saldoAcumulado.saldoPorData; let i = index" [style.background-color]="item.tipo === 'saldo_inicial' ? '#e8f5e9' : ''">
-            <td>
-              {{ formatDate(item.data) }}
-              <span *ngIf="item.tipo === 'saldo_inicial'" style="color: #28a745; font-weight: bold; margin-left: 10px;">(Saldo Anterior)</span>
-            </td>
-            <td>
-              <span *ngIf="item.setimaDinheiro !== undefined">R$ {{ formatCurrency(item.setimaDinheiro) }}</span>
-              <span *ngIf="item.setimaDinheiro === undefined">-</span>
-            </td>
-            <td>
-              <span *ngIf="item.setimaPix !== undefined">R$ {{ formatCurrency(item.setimaPix) }}</span>
-              <span *ngIf="item.setimaPix === undefined">-</span>
-            </td>
-            <td>
-              <span *ngIf="item.vendaLiteratura !== undefined">R$ {{ formatCurrency(item.vendaLiteratura) }}</span>
-              <span *ngIf="item.vendaLiteratura === undefined">-</span>
-            </td>
-            <td>
-              <span *ngIf="item.total !== undefined">R$ {{ formatCurrency(item.total) }}</span>
-              <span *ngIf="item.total === undefined">-</span>
-            </td>
-            <td>
-              <span *ngIf="item.despesas !== undefined">R$ {{ formatCurrency(item.despesas) }}</span>
-              <span *ngIf="item.despesas === undefined">-</span>
-            </td>
-            <td [style.color]="item.saldo >= 0 ? '#28a745' : '#dc3545'" style="font-weight: bold;">
-              R$ {{ formatCurrency(item.saldo) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Detalhamento de Despesas -->
-    <div class="despesas-detalhadas">
-      <h3>Detalhamento de Despesas</h3>
-      <div *ngIf="getTodasDespesas().length > 0">
+    <div *ngIf="saldoAcumulado" class="mt-8 mb-8">
+      <h3 class="text-base font-semibold mb-4">Saldo Acumulado - {{ getNomeMes(relatorioDetalhado.mes) }} de {{ relatorioDetalhado.ano }}</h3>
+      <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th>Data da Reunião</th>
-              <th>Descrição</th>
-              <th>Valor</th>
+              <th>Data</th>
+              <th>7a. Dinheiro</th>
+              <th>7a. Pix</th>
+              <th>Venda Lit.</th>
+              <th>Total</th>
+              <th>Despesas</th>
+              <th>Saldo Acumulado</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let despesa of getTodasDespesas()">
-              <td>{{ formatDate(despesa.dataReuniao) }}</td>
-              <td>{{ despesa.Descricao }}</td>
-              <td>R$ {{ formatCurrency(despesa.ValorDespesa) }}</td>
+            <tr *ngFor="let item of saldoAcumulado.saldoPorData; let i = index" [class.saldo-inicial-row]="item.tipo === 'saldo_inicial'">
+              <td>
+                {{ formatDate(item.data) }}
+                <span *ngIf="item.tipo === 'saldo_inicial'" class="text-emerald-700 font-bold ml-2">(Saldo Anterior)</span>
+              </td>
+              <td>
+                <span *ngIf="item.setimaDinheiro !== undefined">R$ {{ formatCurrency(item.setimaDinheiro) }}</span>
+                <span *ngIf="item.setimaDinheiro === undefined">-</span>
+              </td>
+              <td>
+                <span *ngIf="item.setimaPix !== undefined">R$ {{ formatCurrency(item.setimaPix) }}</span>
+                <span *ngIf="item.setimaPix === undefined">-</span>
+              </td>
+              <td>
+                <span *ngIf="item.vendaLiteratura !== undefined">R$ {{ formatCurrency(item.vendaLiteratura) }}</span>
+                <span *ngIf="item.vendaLiteratura === undefined">-</span>
+              </td>
+              <td>
+                <span *ngIf="item.total !== undefined">R$ {{ formatCurrency(item.total) }}</span>
+                <span *ngIf="item.total === undefined">-</span>
+              </td>
+              <td>
+                <span *ngIf="item.despesas !== undefined">R$ {{ formatCurrency(item.despesas) }}</span>
+                <span *ngIf="item.despesas === undefined">-</span>
+              </td>
+              <td class="font-bold" [class.text-emerald-700]="item.saldo >= 0" [class.text-red-600]="item.saldo < 0">
+                R$ {{ formatCurrency(item.saldo) }}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p *ngIf="getTodasDespesas().length === 0" style="color: #666; font-style: italic;">Nenhuma despesa cadastrada</p>
+    </div>
+
+    <div class="mt-8">
+      <h3 class="text-base font-semibold mb-4">Detalhamento de Despesas</h3>
+      <div *ngIf="getTodasDespesas().length > 0">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Data da Reunião</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let despesa of getTodasDespesas()">
+                <td>{{ formatDate(despesa.dataReuniao) }}</td>
+                <td>{{ despesa.Descricao }}</td>
+                <td>R$ {{ formatCurrency(despesa.ValorDespesa) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p *ngIf="getTodasDespesas().length === 0" class="text-brand/60 italic">Nenhuma despesa cadastrada</p>
     </div>
   </div>
 </div>

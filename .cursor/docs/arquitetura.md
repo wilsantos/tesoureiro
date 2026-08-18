@@ -67,12 +67,12 @@ tesoureiro/
 │       │   └── relatorios/       # Aba Relatórios (+ export DOCX)
 │       ├── services/api.service.ts
 │       └── app.routes.ts         # Vazio — navegação por abas no AppComponent
-├── database/                     # Migrações históricas (MySQL) e dumps
+├── database/                     # Migrações PostgreSQL e dumps de backup
 ├── docker/
 │   ├── php/                      # Dockerfile da API
 │   ├── nginx/                    # Gateway e frontend estático
 │   └── postgres/init/            # Schema inicial PostgreSQL
-├── scripts/                      # Backup, restore, migração MySQL→PG
+├── scripts/                      # Backup, restore e init PostgreSQL
 ├── docker-compose.yml
 ├── docker-compose.dev.yml
 └── .env.example
@@ -206,10 +206,10 @@ Dados seed: CSA ABC, CSA Mauá Sem Fronteiras.
 |---------|------------|
 | `docker/postgres/init/01-schema.sql` | Schema canônico PostgreSQL |
 | `docker/postgres/init/02-sequences.sql` | Ajuste de sequences pós-importação |
-| `database/20260204_inclusao_campos.sql` | Histórico MySQL: `VendaLiteratura`, `repasse`, `compra_literatura` |
-| `database/20260307_comprovante_opcional.sql` | Histórico MySQL: `Comprovante` nullable |
-| `database/20260730_valor_despesa_decimal.sql` | Histórico MySQL: tipo decimal |
-| `database/*.sql` / `*.dump` | Backups e dumps de migração |
+| `database/20260204_inclusao_campos.sql` | `VendaLiteratura`, `repasse`, `compra_literatura` |
+| `database/20260307_comprovante_opcional.sql` | `Comprovante` nullable |
+| `database/20260730_valor_despesa_decimal.sql` | `Valor` como `DECIMAL(12,2)` |
+| `database/*.sql` / `*.dump` | Backups e dumps PostgreSQL |
 
 Novas alterações de schema devem ir em `database/` (PostgreSQL) via agent `dba`.
 
@@ -317,7 +317,6 @@ docker compose up -d --build
 |-----------------|--------|-----|
 | `DB_*` | ver `.env.example` | Conexão PostgreSQL externo |
 | `APP_PORT` | `8099` | Porta do gateway Nginx |
-| `MYSQL_*` | — | Apenas scripts de migração MySQL→PG |
 
 - **Produção Docker**: gateway em `http://localhost:{APP_PORT}` — `/api/` → PHP, `/` → frontend estático
 - **Dev Docker** (`docker-compose.dev.yml`): volume bind em `./api` para hot-reload PHP
@@ -342,7 +341,7 @@ Acessar `/api/test.php` para validar conexão PDO e contagem de registros em `gr
 | REST procedural (sem framework PHP) | Simplicidade, deploy em hospedagem compartilhada |
 | Um arquivo por recurso | Fácil localizar e alterar endpoints |
 | Angular standalone sem rotas | SPA simples com abas; rotas reservadas para evolução |
-| PostgreSQL com identificadores quotados | Compatibilidade pós-migração do MySQL |
+| PostgreSQL com identificadores quotados | Convenção PascalCase alinhada ao domínio legado e à API PHP |
 | Comprovantes em BYTEA | Evita sistema de arquivos; trade-off de tamanho no banco |
 | CORS aberto | Frontend e API podem estar em origens diferentes no dev |
 | CSA somente leitura na API | Cadastro de CSA feito direto no banco/seed |

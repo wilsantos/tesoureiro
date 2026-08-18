@@ -1,0 +1,54 @@
+<div class="csa-autocomplete">
+  <div class="csa-input-row">
+    <input
+      type="text"
+      class="csa-input"
+      [id]="inputId"
+      [placeholder]="placeholder"
+      [value]="searchText"
+      [disabled]="disabled"
+      autocomplete="off"
+      (input)="onInput($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+    />
+    <button
+      *ngIf="selectedId > 0 || searchText"
+      type="button"
+      class="btn btn-secondary btn-sm csa-clear-btn"
+      [disabled]="disabled"
+      (click)="clear()"
+    >
+      Limpar
+    </button>
+  </div>
+
+  <p class="csa-hint">
+    Digite pelo menos 3 letras do nome da região ou da comunidade
+  </p>
+
+  <p *ngIf="isLoading" class="csa-status">Buscando...</p>
+  <p *ngIf="searchError" class="csa-error">{{ searchError }}</p>
+
+  <ul
+    *ngIf="showDropdown && searchText.trim().length >= 3 && !isLoading"
+    class="csa-dropdown"
+    role="listbox"
+  >
+    <li
+      *ngIf="items.length === 0 && !searchError"
+      class="csa-dropdown-empty"
+    >
+      Nenhuma CSA encontrada.
+    </li>
+    <li
+      *ngFor="let item of items"
+      class="csa-dropdown-item"
+      role="option"
+      (mousedown)="$event.preventDefault()"
+      (click)="selectItem(item)"
+    >
+      {{ item.Label }}
+    </li>
+  </ul>
+</div>

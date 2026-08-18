@@ -1,211 +1,262 @@
 <div>
-  <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2>Gerenciamento de Reuniões</h2>
-    <button *ngIf="grupoSelecionado" class="btn btn-primary" (click)="openModal()">Nova Reunião</button>
+  <div class="header-actions flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">
+    <h2 class="text-xl font-semibold">Gerenciamento de Reuniões</h2>
+    <button
+      *ngIf="grupoSelecionado && filtrosPreenchidos && !showFormulario"
+      class="btn btn-primary m-0 w-full sm:w-auto"
+      (click)="abrirFormulario()"
+    >Nova Reunião</button>
   </div>
 
-  <!-- Seleção inicial de grupo -->
-  <div *ngIf="!grupoSelecionado" class="info-box" style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px; text-align: center;">
-    <h3 style="margin-bottom: 15px;">Selecione um Grupo</h3>
-    <div class="form-group" style="max-width: 400px; margin: 0 auto;">
-      <label style="font-size: 1.1rem; margin-bottom: 10px; display: block;">Grupo *</label>
-      <select [(ngModel)]="filtroGrupo" (change)="selecionarGrupo()" style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;">
+  <div *ngIf="!grupoSelecionado" class="info-box text-center">
+    <h3 class="text-lg font-semibold mb-4">Selecione um Grupo</h3>
+    <div class="form-group max-w-md mx-auto mb-0">
+      <label class="text-base mb-2.5">Grupo *</label>
+      <select [(ngModel)]="filtroGrupo" (change)="selecionarGrupo()">
         <option [value]="null">Selecione o grupo</option>
         <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
       </select>
     </div>
   </div>
 
-  <!-- Filtros de mês e ano (só aparecem após selecionar grupo) -->
   <div *ngIf="grupoSelecionado">
-    <div class="info-box" style="background-color: #e8f5e9; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-      <p style="margin: 0; color: #666;">
-        <strong>Grupo selecionado:</strong> {{ getGrupoNomeSelecionado() }} | Selecione Mês e Ano para visualizar as reuniões.
+    <div class="info-box info-box-success">
+      <p class="m-0">
+        <strong>Grupo selecionado:</strong> {{ getGrupoNomeSelecionado() }} | Ajuste mês e ano conforme necessário.
       </p>
     </div>
 
-    <div class="filtros-container" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-      <div class="form-group" style="max-width: 150px; flex: 1; min-width: 120px;">
+    <div class="filtros-container flex flex-wrap gap-4 mb-5">
+      <div class="form-group max-w-[150px] flex-1 min-w-[120px] mb-0">
         <label>Ano *</label>
-        <select [(ngModel)]="filtroAno" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-          <option [value]="null">Selecione o ano</option>
-          <option *ngFor="let ano of getAnos()" [value]="ano">{{ ano }}</option>
-        </select>
+        <input
+          type="text"
+          [(ngModel)]="filtroAnoInput"
+          (input)="onAnoInputChange()"
+          maxlength="4"
+          inputmode="numeric"
+          placeholder="Ano">
       </div>
 
-      <div class="form-group" style="max-width: 200px; flex: 1; min-width: 150px;">
+      <div class="form-group max-w-[200px] flex-1 min-w-[150px] mb-0">
         <label>Mês *</label>
-        <select [(ngModel)]="filtroMes" (change)="onFiltroChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-          <option [value]="null">Selecione o mês</option>
-          <option *ngFor="let mes of getMeses()" [value]="mes.valor">{{ mes.nome }}</option>
+        <select [(ngModel)]="filtroMes" (change)="onFiltroChange()">
+          <option *ngFor="let mes of getMeses()" [ngValue]="mes.valor">{{ mes.nome }}</option>
         </select>
       </div>
     </div>
   </div>
 
-  <div class="table-container" *ngIf="filtrosPreenchidos">
-  <table>
-    <thead>
-      <tr>
-        <th class="col-id">ID</th>
-        <th class="col-grupo">Grupo</th>
-        <th class="col-data">Data</th>
-        <th class="col-membros">Membros</th>
-        <th class="col-visitantes">Visitantes</th>
-        <th class="col-total-setima">Total Sétima</th>
-        <th class="col-total-despesas">Total Despesas</th>
-        <th class="col-acoes">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let reuniao of reunioes">
-        <td class="col-id">{{ reuniao.Id }}</td>
-        <td class="col-grupo">{{ reuniao.NomeGrupo || getGrupoNome(reuniao.IdGrupo) }}</td>
-        <td class="col-data">{{ formatDate(reuniao.Data) }}</td>
-        <td class="col-membros">{{ reuniao.Membros }}</td>
-        <td class="col-visitantes">{{ reuniao.Visitantes }}</td>
-        <td class="col-total-setima">R$ {{ formatCurrency(getTotalSetima(reuniao)) }}</td>
-        <td class="col-total-despesas">R$ {{ formatCurrency(getTotalDespesas(reuniao.Id)) }}</td>
-        <td class="col-acoes">
-          <button class="btn btn-success" (click)="openModal(reuniao)">Editar</button>
-          <button class="btn btn-danger" (click)="deleteReuniao(reuniao.Id)">Excluir</button>
-        </td>
-      </tr>
-      <tr *ngIf="reunioes.length === 0">
-        <td class="col-data" colspan="2" style="text-align: center; padding: 20px;">
-          Nenhuma reunião cadastrada
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  </div>
+  <section *ngIf="showFormulario" id="formulario-reuniao" class="panel mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-5 pb-4 border-b border-surface-border">
+      <h2 class="text-xl font-semibold m-0">{{ isEdit ? 'Editar Reunião' : 'Nova Reunião' }}</h2>
+      <button type="button" class="btn btn-secondary btn-sm m-0 w-full sm:w-auto" (click)="fecharFormulario()">
+        Voltar para lista
+      </button>
+    </div>
 
-  <div class="modal" [class.show]="showModal">
-    <div class="modal-content">
-      <span class="close" (click)="closeModal()">&times;</span>
-      <h2>{{ isEdit ? 'Editar Reunião' : 'Nova Reunião' }}</h2>
-      
-      <div class="form-container">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Grupo *</label>
-            <select [(ngModel)]="reuniao.IdGrupo" required [disabled]="!isEdit">
-              <option [value]="null">Selecione um grupo</option>
-              <option *ngFor="let grupo of grupos" [value]="grupo.Id">{{ grupo.Nome }}</option>
-            </select>
-            <small *ngIf="!isEdit" style="display: block; margin-top: 5px; color: #666;">
-              O grupo já foi selecionado na tela principal
-            </small>
-          </div>
+    <div class="reuniao-cabecalho grid grid-cols-1 md:grid-cols-2 gap-4 p-4 mb-4 bg-surface-muted border border-surface-border rounded-md">
+      <div class="flex flex-col gap-1.5">
+        <span class="text-xs font-semibold text-brand/70">Grupo</span>
+        <span class="text-base font-semibold">{{ getGrupoNome(reuniao.IdGrupo) }}</span>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-semibold text-brand/70" for="reuniao-data">Data *</label>
+        <input id="reuniao-data" type="date" [(ngModel)]="reuniao.Data" required>
+      </div>
+    </div>
 
-          <div class="form-group">
-            <label>Data *</label>
-            <input type="date" [(ngModel)]="reuniao.Data" required>
-          </div>
-        </div>
+    <div class="nav-tabs reuniao-tabs">
+      <button
+        type="button"
+        class="nav-tab"
+        [class.active]="abaAtiva === 'secretaria'"
+        [class.disabled]="!podeAcessarSecretaria()"
+        [disabled]="!podeAcessarSecretaria()"
+        (click)="selecionarAba('secretaria')">
+        Secretaria
+      </button>
+      <button
+        type="button"
+        class="nav-tab"
+        [class.active]="abaAtiva === 'tesouraria'"
+        [class.disabled]="!podeAcessarTesouraria()"
+        [disabled]="!podeAcessarTesouraria()"
+        (click)="selecionarAba('tesouraria')">
+        Tesouraria
+      </button>
+    </div>
 
-        <div class="form-row form-row-duas-colunas">
-          <div class="form-group">
-            <label>Membros</label>
-            <input type="number" [(ngModel)]="reuniao.Membros" min="0">
-          </div>
+    <div *ngIf="!podeAcessarSecretaria() && !podeAcessarTesouraria()" class="info-box info-box-danger mb-4">
+      Você não possui encargo ativo neste grupo para preencher esta reunião.
+    </div>
 
-          <div class="form-group">
-            <label>Visitantes</label>
-            <input type="number" [(ngModel)]="reuniao.Visitantes" min="0">
-          </div>
-        </div>
-
-        <div class="form-row form-row-duas-colunas">
-          <div class="form-group">
-            <label>Valor Sétima</label>
-            <input type="number" step="0.01" [(ngModel)]="reuniao.ValorSetima" min="0">
-          </div>
-
-          <div class="form-group">
-            <label>Valor Sétima PIX</label>
-            <input type="number" step="0.01" [(ngModel)]="reuniao.ValorSetimaPix" min="0">
-          </div>
+    <div *ngIf="abaAtiva === 'secretaria' && podeAcessarSecretaria()" class="pt-2">
+      <div class="form-row form-row-duas-colunas">
+        <div class="form-group">
+          <label>Membros</label>
+          <input type="number" [(ngModel)]="reuniao.Membros" min="0">
         </div>
 
         <div class="form-group">
-          <label>Venda de Literatura</label>
-          <input type="number" step="0.01" [(ngModel)]="reuniao.VendaLiteratura" min="0">
+          <label>Visitantes</label>
+          <input type="number" [(ngModel)]="reuniao.Visitantes" min="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Fatos Relevantes</label>
+        <textarea [(ngModel)]="reuniao.FatosRelevantes" rows="4"></textarea>
+      </div>
+
+      <h3 class="text-base font-semibold mt-5 mb-4">Troca de Fichas</h3>
+      <div class="form-row form-row-duas-colunas">
+        <div class="form-group">
+          <label>Ingresso</label>
+          <input type="number" [(ngModel)]="reuniao.Ingresso" min="0">
         </div>
 
         <div class="form-group">
-          <label>Fatos Relevantes</label>
-          <textarea [(ngModel)]="reuniao.FatosRelevantes" rows="4"></textarea>
+          <label>30 Dias</label>
+          <input type="number" [(ngModel)]="reuniao.TrintaDias" min="0">
         </div>
 
-        <h3 class="section-title" style="margin-top: 20px; margin-bottom: 15px;">Troca de Fichas</h3>
+        <div class="form-group">
+          <label>60 Dias</label>
+          <input type="number" [(ngModel)]="reuniao.SessentaDias" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>90 Dias</label>
+          <input type="number" [(ngModel)]="reuniao.NoventaDias" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>6 Meses</label>
+          <input type="number" [(ngModel)]="reuniao.SeisMeses" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>9 Meses</label>
+          <input type="number" [(ngModel)]="reuniao.NoveMeses" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>1 Ano</label>
+          <input type="number" [(ngModel)]="reuniao.UmAno" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>18 Meses</label>
+          <input type="number" [(ngModel)]="reuniao.DezoitoMeses" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Múltiplos Anos</label>
+          <input type="number" [(ngModel)]="reuniao.MultiplosAnos" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="abaAtiva === 'tesouraria' && podeAcessarTesouraria()" class="pt-2">
+      <section class="mb-5 p-4 bg-surface-muted border border-surface-border rounded-md">
+        <h3 class="text-base font-semibold mb-4">Valor Sétima</h3>
         <div class="form-row form-row-duas-colunas">
-          <div class="form-group">
-            <label>Ingresso</label>
-            <input type="number" [(ngModel)]="reuniao.Ingresso" min="0">
+          <div class="form-group mb-0">
+            <label for="valor-dinheiro">Valor Dinheiro</label>
+            <input id="valor-dinheiro" type="number" step="0.01" [(ngModel)]="reuniao.ValorSetima" min="0">
           </div>
 
-          <div class="form-group">
-            <label>30 Dias</label>
-            <input type="number" [(ngModel)]="reuniao.TrintaDias" min="0">
+          <div class="form-group mb-0">
+            <label for="valor-pix">Valor Pix</label>
+            <input id="valor-pix" type="number" step="0.01" [(ngModel)]="reuniao.ValorSetimaPix" min="0">
           </div>
 
-          <div class="form-group">
-            <label>60 Dias</label>
-            <input type="number" [(ngModel)]="reuniao.SessentaDias" min="0">
-          </div>
-
-          <div class="form-group">
-            <label>90 Dias</label>
-            <input type="number" [(ngModel)]="reuniao.NoventaDias" min="0">
-          </div>
-
-          <div class="form-group">
-            <label>6 Meses</label>
-            <input type="number" [(ngModel)]="reuniao.SeisMeses" min="0">
-          </div>
-
-          <div class="form-group">
-            <label>9 Meses</label>
-            <input type="number" [(ngModel)]="reuniao.NoveMeses" min="0">
-          </div>
-
-          <div class="form-group">
-            <label>1 Ano</label>
-            <input type="number" [(ngModel)]="reuniao.UmAno" min="0">
-          </div>
-
-          <div class="form-group">
-            <label>18 Meses</label>
-            <input type="number" [(ngModel)]="reuniao.DezoitoMeses" min="0">
-          </div>
-
-          <div class="form-group">
-            <label>Múltiplos Anos</label>
-            <input type="number" [(ngModel)]="reuniao.MultiplosAnos" min="0">
+          <div class="form-group mb-0">
+            <label for="total-setima">Total Sétima</label>
+            <div
+              id="total-setima"
+              class="w-full px-3 py-2.5 border border-surface-border rounded-md text-sm bg-surface text-brand font-semibold"
+              aria-live="polite"
+            >
+              R$ {{ formatCurrency(getTotalSetima(reuniao)) }}
+            </div>
           </div>
         </div>
+      </section>
 
-        <!-- Seção de Despesas -->
-        <div style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-            <h3 class="section-title" style="margin: 0;">Despesas</h3>
-            <button type="button" class="btn btn-primary" (click)="openDespesaModal()" [disabled]="!reuniao.Id" style="flex-shrink: 0;">
-              Adicionar Despesa
+      <div class="form-group">
+        <label>Venda de Literatura</label>
+        <input type="number" step="0.01" [(ngModel)]="reuniao.VendaLiteratura" min="0">
+      </div>
+
+      <div class="mt-6 border-t-2 border-surface-border pt-5">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+          <h3 class="text-base font-semibold m-0">Despesas</h3>
+          <button
+            type="button"
+            class="btn btn-primary m-0 w-full sm:w-auto"
+            (click)="abrirFormularioDespesa()"
+            [disabled]="showFormularioDespesa || salvandoReuniao"
+          >
+            Adicionar Despesa
+          </button>
+        </div>
+
+        <div *ngIf="showFormularioDespesa" class="mb-5 p-4 bg-surface-muted border border-surface-border rounded-md">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+            <h4 class="text-base font-semibold m-0">{{ isEditDespesa ? 'Editar Despesa' : 'Nova Despesa' }}</h4>
+            <button type="button" class="btn btn-secondary btn-sm m-0" (click)="fecharFormularioDespesa()">Cancelar</button>
+          </div>
+
+          <div class="form-group">
+            <label>Descrição *</label>
+            <input type="text" [(ngModel)]="despesa.Descricao" placeholder="Descrição da despesa" required>
+          </div>
+
+          <div class="form-group">
+            <label>Valor *</label>
+            <input
+              type="text"
+              inputmode="decimal"
+              name="valorDespesa"
+              [ngModel]="valorDespesaInput"
+              (input)="onValorDespesaInput($event)"
+              placeholder="0,00"
+              required>
+          </div>
+
+          <div class="form-row form-row-duas-colunas">
+            <div class="form-group">
+              <label class="inline-flex items-center gap-2 cursor-pointer font-normal">
+                <input type="checkbox" [(ngModel)]="despesa.repasse"> Repasse
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="inline-flex items-center gap-2 cursor-pointer font-normal">
+                <input type="checkbox" [(ngModel)]="despesa.compra_literatura"> Compra de Literatura
+              </label>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2.5 mt-4">
+            <button
+              class="btn btn-primary m-0 w-full sm:w-auto"
+              (click)="saveDespesa()"
+              [disabled]="salvandoReuniao"
+            >
+              {{ salvandoReuniao ? 'Salvando reunião...' : 'Salvar Despesa' }}
             </button>
           </div>
-          
-          <div *ngIf="!reuniao.Id" style="padding: 10px; background-color: #fff3cd; border-radius: 4px; margin-bottom: 15px;">
-            <small>Salve a reunião primeiro para adicionar despesas</small>
-          </div>
+        </div>
 
-          <div class="table-container" *ngIf="reuniao.Id && despesas.length > 0" style="margin-top: 10px;">
-          <table class="despesas-table" style="margin-top: 10px;">
+        <div class="table-container" *ngIf="despesas.length > 0">
+          <table class="despesas-table text-sm">
             <thead>
               <tr>
                 <th>Descrição</th>
                 <th>Valor</th>
-                <th>Comprovante</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -213,83 +264,78 @@
               <tr *ngFor="let despesa of despesas">
                 <td>{{ despesa.Descricao }}</td>
                 <td>R$ {{ formatCurrency(despesa.ValorDespesa) }}</td>
-                <td>
-                  <span *ngIf="despesa.Comprovante">Sim</span>
-                  <span *ngIf="!despesa.Comprovante">Não</span>
-                </td>
-                <td>
-                  <button class="btn btn-success" (click)="openDespesaModal(despesa)">Editar</button>
-                  <button class="btn btn-danger" (click)="deleteDespesa(despesa.Id)">Excluir</button>
+                <td class="whitespace-nowrap">
+                  <button class="btn btn-success btn-sm" (click)="abrirFormularioDespesa(despesa)">Editar</button>
+                  <button class="btn btn-danger btn-sm" (click)="deleteDespesa(despesa.Id)">Excluir</button>
                 </td>
               </tr>
             </tbody>
           </table>
-          </div>
-
-          <div *ngIf="reuniao.Id && despesas.length === 0" style="text-align: center; padding: 20px; color: #666;">
-            Nenhuma despesa cadastrada
-          </div>
         </div>
 
-        <div class="action-buttons" style="margin-top: 20px;">
-          <button class="btn btn-primary" (click)="saveReuniao()">Salvar Reunião</button>
-          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        <div *ngIf="despesas.length === 0 && !showFormularioDespesa" class="text-center py-5 text-brand/60">
+          Nenhuma despesa cadastrada
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal de Despesa -->
-  <div class="modal" [class.show]="showDespesaModal">
-    <div class="modal-content">
-      <span class="close" (click)="closeDespesaModal()">&times;</span>
-      <h2>{{ isEditDespesa ? 'Editar Despesa' : 'Nova Despesa' }}</h2>
-      
-      <div class="form-container">
-        <div class="form-group">
-          <label>Descrição *</label>
-          <input type="text" [(ngModel)]="despesa.Descricao" placeholder="Descrição da despesa" required>
-        </div>
-
-        <div class="form-group">
-          <label>Valor *</label>
-          <input
-            type="text"
-            inputmode="decimal"
-            name="valorDespesa"
-            [ngModel]="valorDespesaInput"
-            (input)="onValorDespesaInput($event)"
-            placeholder="0,00"
-            required>
-        </div>
-
-        <div class="form-row form-row-duas-colunas">
-          <div class="form-group">
-            <label>
-              <input type="checkbox" [(ngModel)]="despesa.repasse"> Repasse
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>
-              <input type="checkbox" [(ngModel)]="despesa.compra_literatura"> Compra de Literatura
-            </label>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Comprovante</label>
-          <input type="file" (change)="onFileSelected($event)" accept="image/*,application/pdf">
-          <small style="display: block; margin-top: 5px; color: #666;">
-            Formatos aceitos: Imagens (JPG, PNG) ou PDF
-          </small>
-        </div>
-
-        <div class="action-buttons" style="margin-top: 20px;">
-          <button class="btn btn-primary" (click)="saveDespesa()">Salvar</button>
-          <button class="btn btn-secondary" (click)="closeDespesaModal()">Cancelar</button>
-        </div>
-      </div>
+    <div class="action-buttons flex flex-col sm:flex-row gap-2.5 mt-6 pt-4 border-t border-surface-border">
+      <button
+        class="btn btn-primary m-0 w-full sm:w-auto"
+        (click)="saveReuniao()"
+        [disabled]="(!podeAcessarSecretaria() && !podeAcessarTesouraria()) || salvandoReuniao">
+        Salvar Reunião
+      </button>
+      <button class="btn btn-secondary m-0 w-full sm:w-auto" (click)="fecharFormulario()">Cancelar</button>
     </div>
+  </section>
+
+  <div class="table-container" *ngIf="filtrosPreenchidos && !showFormulario">
+    <table class="reunioes-table">
+      <thead>
+        <tr>
+          <th *ngIf="exibirGridCompleto()" class="col-id hidden md:table-cell">ID</th>
+          <th *ngIf="exibirGridCompleto()" class="col-grupo hidden md:table-cell">Grupo</th>
+          <th class="col-data">Data</th>
+          <th *ngIf="exibirGridCompleto()" class="col-membros hidden md:table-cell">Membros</th>
+          <th *ngIf="exibirGridCompleto()" class="col-visitantes hidden md:table-cell">Visitantes</th>
+          <th *ngIf="exibirGridSecretaria()" class="col-membros hidden md:table-cell">Total de membros</th>
+          <th *ngIf="exibirGridSecretaria()" class="hidden md:table-cell">Total de participantes</th>
+          <th *ngIf="exibirGridCompleto() || exibirGridTesouraria()" class="col-total-setima hidden md:table-cell">
+            {{ exibirGridTesouraria() ? 'Total de Sétima' : 'Total Sétima' }}
+          </th>
+          <th *ngIf="exibirGridTesouraria()" class="hidden md:table-cell">Venda de Literatura</th>
+          <th *ngIf="exibirGridCompleto() || exibirGridTesouraria()" class="col-total-despesas hidden md:table-cell">
+            {{ exibirGridTesouraria() ? 'Total de Despesas' : 'Total Despesas' }}
+          </th>
+          <th class="col-acoes">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let reuniao of reunioes">
+          <td *ngIf="exibirGridCompleto()" class="col-id hidden md:table-cell">{{ reuniao.Id }}</td>
+          <td *ngIf="exibirGridCompleto()" class="col-grupo hidden md:table-cell">{{ reuniao.NomeGrupo || getGrupoNome(reuniao.IdGrupo) }}</td>
+          <td class="col-data font-semibold md:font-normal">{{ formatDate(reuniao.Data) }}</td>
+          <td *ngIf="exibirGridCompleto()" class="col-membros hidden md:table-cell">{{ reuniao.Membros }}</td>
+          <td *ngIf="exibirGridCompleto()" class="col-visitantes hidden md:table-cell">{{ reuniao.Visitantes }}</td>
+          <td *ngIf="exibirGridSecretaria()" class="col-membros hidden md:table-cell">{{ reuniao.Membros }}</td>
+          <td *ngIf="exibirGridSecretaria()" class="hidden md:table-cell">{{ getTotalParticipantes(reuniao) }}</td>
+          <td *ngIf="exibirGridCompleto() || exibirGridTesouraria()" class="col-total-setima hidden md:table-cell">R$ {{ formatCurrency(getTotalSetima(reuniao)) }}</td>
+          <td *ngIf="exibirGridTesouraria()" class="hidden md:table-cell">R$ {{ formatCurrency(reuniao.VendaLiteratura) }}</td>
+          <td *ngIf="exibirGridCompleto() || exibirGridTesouraria()" class="col-total-despesas hidden md:table-cell">R$ {{ formatCurrency(getTotalDespesas(reuniao.Id)) }}</td>
+          <td class="col-acoes">
+            <div class="flex flex-wrap gap-1 md:gap-0">
+              <button class="btn btn-success btn-sm flex-1 md:flex-none" (click)="abrirFormulario(reuniao)">Editar</button>
+              <button class="btn btn-danger btn-sm flex-1 md:flex-none" (click)="deleteReuniao(reuniao.Id)">Excluir</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="reunioes.length === 0">
+          <td class="col-data text-center py-5 text-brand/50" [attr.colspan]="getGridColspan()">
+            Nenhuma reunião cadastrada
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

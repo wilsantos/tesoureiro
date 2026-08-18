@@ -105,13 +105,62 @@ Mesmos campos obrigatórios do POST, mais `Id` obrigatório.
 
 ## CSA — `/api/csa/`
 
-Somente leitura.
+Somente leitura. Autocomplete server-side — **não** retorna lista completa.
 
-### GET — Listar
+### GET — Buscar ou detalhar
 
-`GET /api/csa/`
+| Cenário | URL | Resposta |
+|---------|-----|----------|
+| Busca | `GET /api/csa/?q={texto}&limit={n}` | `{ items, total, limit }` |
+| Detalhe | `GET /api/csa/?id={id}` | `{ items: [um], total: 1, limit: 1 }` ou `404` |
+| Sem parâmetros | `GET /api/csa/` | `400` |
 
-Retorna array: `[{ "Id": 1, "Nome": "..." }, ...]` ordenado por `Nome`.
+**Parâmetros de busca (`q`):**
+
+| Parâmetro | Obrigatório | Regra |
+|-----------|-------------|-------|
+| `q` | sim* | Trim; mínimo 3 caracteres; busca case-insensitive em `csa.Nome` ou `csr.Nome` |
+| `limit` | não | Default `20`; máximo `50` |
+| `id` | sim* | Alternativa a `q`; retorna um CSA pelo `Id` interno |
+
+\* Exatamente um modo: **`q`** (busca) ou **`id`** (detalhe). Se `id` estiver presente, ele tem prioridade.
+
+**Campos de cada item (`CsaOption`):**
+
+`Id`, `Nome`, `CSR` (integer ou `null`), `CSR_Nome` (string ou `null`), `Label` (string)
+
+- `Label` = `CSR_Nome + ' - ' + Nome` quando há CSR vinculado; caso contrário, apenas `Nome` (registros legados sem CSR).
+- Ordenação da busca: `CSR_Nome` ascendente (`NULLS LAST`), depois `Nome` ascendente.
+
+**Respostas de erro:**
+
+| Código | Situação | Corpo |
+|--------|----------|-------|
+| `400` | Sem `q` nem `id` | `{ "message": "Informe o parâmetro q (busca, mínimo 3 caracteres) ou id (detalhe)." }` |
+| `400` | `q` com menos de 3 caracteres | `{ "message": "Informe ao menos 3 caracteres para buscar CSAs." }` |
+| `404` | `id` inexistente | `{ "message": "CSA não encontrado" }` |
+
+**Exemplo de busca:**
+
+```
+GET /api/csa/?q=abc&limit=20
+```
+
+```json
+{
+  "items": [
+    {
+      "Id": 117,
+      "Nome": "CSA ABC Paulista",
+      "CSR": 5,
+      "CSR_Nome": "Região ABC",
+      "Label": "Região ABC - CSA ABC Paulista"
+    }
+  ],
+  "total": 1,
+  "limit": 20
+}
+```
 
 Outros métodos retornam `405`.
 
@@ -123,13 +172,13 @@ Outros métodos retornam `405`.
 
 | Cenário | URL | Observação |
 |---------|-----|------------|
-| Todas | `GET /api/despesas/` | Sem `Comprovante` |
-| Por reunião | `GET /api/despesas/?IdReuniao={id}` | Sem `Comprovante` |
-| Por ID | `GET /api/despesas/?id={id}` | Inclui `Comprovante` em Base64 |
+| Todas | `GET /api/despesas/` | Listagem padrão |
+| Por reunião | `GET /api/despesas/?IdReuniao={id}` | Despesas de uma reunião |
+| Por ID | `GET /api/despesas/?id={id}` | Mesmos campos da listagem |
 
-**Campos retornados (listagem):** `Id`, `IdReuniao`, `Descricao`, `ValorDespesa`, `repasse`, `compra_literatura` (booleanos)
+**Campos retornados:** `Id`, `IdReuniao`, `Descricao`, `ValorDespesa`, `repasse`, `compra_literatura` (booleanos)
 
-**Campos retornados (por id):** acima + `Comprovante` (Base64)
+> Comprovantes fora do escopo da v1 — ver [ADR](../../docs/decisoes/20260815-comprovantes-fora-escopo-v1.md).
 
 ### POST — Criar
 
@@ -140,7 +189,6 @@ Outros métodos retornam `405`.
 | `ValorDespesa` | sim | number | — |
 | `repasse` | não | boolean | `false` |
 | `compra_literatura` | não | boolean | `false` |
-| `Comprovante` | não | string Base64 | `null` |
 
 **Resposta:** `201` com `{ "message": "Despesa criada com sucesso", "id": <id> }`
 
@@ -154,7 +202,6 @@ Outros métodos retornam `405`.
 | `ValorDespesa` | sim |
 | `repasse` | não (default `false`) |
 | `compra_literatura` | não (default `false`) |
-| `Comprovante` | não — se enviado e não vazio, substitui o arquivo |
 
 ### DELETE — Excluir
 
@@ -309,7 +356,8 @@ Verifica conexão PDO e conta registros em `grupo` e `reuniao`.
 | `createReuniao(data)` | POST | `/reuniao/` |
 | `updateReuniao(data)` | PUT | `/reuniao/` |
 | `deleteReuniao(id)` | DELETE | `/reuniao/?id=` |
-| `getCSAs()` | GET | `/csa/` |
+| `buscarCSAs(q, limit?)` | GET | `/csa/?q=&limit=` |
+| `getCSA(id)` | GET | `/csa/?id=` |
 | `getDespesas(idReuniao?)` | GET | `/despesas/` ou `?IdReuniao=` |
 | `getDespesa(id)` | GET | `/despesas/?id=` |
 | `createDespesa(data)` | POST | `/despesas/` |

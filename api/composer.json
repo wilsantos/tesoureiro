@@ -1,0 +1,11 @@
+{
+    "name": "tesoureiro/api",
+    "description": "API REST do Servidor de NA",
+    "require": {
+        "php": ">=7.4",
+        "firebase/php-jwt": "^7.0"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

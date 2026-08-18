@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { CsaOption, CsaSearchResponse } from '../models/csa.model';
+import { GrupoListFiltros, GrupoListItem, GrupoListResponse } from '../models/grupo.model';
 
 const API_URL = environment.apiUrl;
 
@@ -12,8 +15,32 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   // Métodos para Grupo
-  getGrupos(): Observable<any> {
-    return this.http.get(`${API_URL}/grupo/`);
+  getGrupos(): Observable<GrupoListItem[]> {
+    return this.http.get<GrupoListItem[]>(`${API_URL}/grupo/`);
+  }
+
+  getGruposPaginados(filtros: GrupoListFiltros): Observable<GrupoListResponse> {
+    const params: string[] = [];
+
+    if (filtros.csa) {
+      params.push(`CSA=${filtros.csa}`);
+    }
+    if (filtros.busca) {
+      params.push(`busca=${encodeURIComponent(filtros.busca)}`);
+    }
+    if (filtros.limit) {
+      params.push(`limit=${filtros.limit}`);
+    }
+    if (filtros.offset !== undefined) {
+      params.push(`offset=${filtros.offset}`);
+    }
+    if (filtros.disponiveis) {
+      params.push('disponiveis=1');
+    }
+
+    const query = params.length > 0 ? `?${params.join('&')}` : '';
+
+    return this.http.get<GrupoListResponse>(`${API_URL}/grupo/${query}`);
   }
 
   getGrupo(id: number): Observable<any> {
@@ -73,8 +100,16 @@ export class ApiService {
   }
 
   // Métodos para CSA
-  getCSAs(): Observable<any> {
-    return this.http.get(`${API_URL}/csa/`);
+  buscarCSAs(q: string, limit = 20): Observable<CsaSearchResponse> {
+    return this.http.get<CsaSearchResponse>(
+      `${API_URL}/csa/?q=${encodeURIComponent(q)}&limit=${limit}`
+    );
+  }
+
+  getCSA(id: number): Observable<CsaOption> {
+    return this.http.get<CsaSearchResponse>(`${API_URL}/csa/?id=${id}`).pipe(
+      map((res) => res.items[0])
+    );
   }
 
   // Métodos para Despesas

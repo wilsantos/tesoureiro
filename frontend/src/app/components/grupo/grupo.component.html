@@ -1,44 +1,46 @@
 <div>
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2>Gerenciamento de Grupos</h2>
-    <button class="btn btn-primary" (click)="openModal()">Novo Grupo</button>
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">
+    <h2 class="text-xl font-semibold">Gerenciamento de Grupos</h2>
+    <button class="btn btn-primary m-0 w-full sm:w-auto" (click)="openModal()">Novo Grupo</button>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nome</th>
-        <th>Endereço</th>
-        <th>CSA</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let grupo of grupos">
-        <td>{{ grupo.Id }}</td>
-        <td>{{ grupo.Nome }}</td>
-        <td>{{ grupo.Endereco }}</td>
-        <td>{{ grupo.CSA_Nome }}</td>
-        <td>
-          <button class="btn btn-success" (click)="openModal(grupo)">Editar</button>
-          <button class="btn btn-danger" (click)="deleteGrupo(grupo.Id)">Excluir</button>
-        </td>
-      </tr>
-      <tr *ngIf="grupos.length === 0">
-        <td colspan="5" style="text-align: center; padding: 20px;">
-          Nenhum grupo cadastrado
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Endereço</th>
+          <th>CSA</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let grupo of grupos">
+          <td>{{ grupo.Id }}</td>
+          <td>{{ grupo.Nome }}</td>
+          <td>{{ grupo.Endereco }}</td>
+          <td>{{ grupo.CSA_Nome }}</td>
+          <td class="whitespace-nowrap">
+            <button class="btn btn-success btn-sm" (click)="openModal(grupo)">Editar</button>
+            <button class="btn btn-danger btn-sm" (click)="deleteGrupo(grupo.Id)">Excluir</button>
+          </td>
+        </tr>
+        <tr *ngIf="grupos.length === 0">
+          <td colspan="5" class="text-center py-5 text-brand/50">
+            Nenhum grupo cadastrado
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <div class="modal" [class.show]="showModal">
     <div class="modal-content">
       <span class="close" (click)="closeModal()">&times;</span>
-      <h2>{{ isEdit ? 'Editar Grupo' : 'Novo Grupo' }}</h2>
-      
-      <div class="form-container">
+      <h2 class="text-xl font-semibold mb-4">{{ isEdit ? 'Editar Grupo' : 'Novo Grupo' }}</h2>
+
+      <div class="form-container !p-0 !shadow-none !mb-0">
         <div class="form-group">
           <label>Nome *</label>
           <input type="text" [(ngModel)]="grupo.Nome" placeholder="Nome do grupo">
@@ -50,11 +52,13 @@
         </div>
 
         <div class="form-group">
-          <label>CSA *</label>
-          <select [(ngModel)]="grupo.CSA" required>
-            <option value="">Selecione um CSA</option>
-            <option *ngFor="let csa of csas" [value]="csa.Id">{{ csa.Nome }}</option>
-          </select>
+          <label for="grupo-csa">CSA *</label>
+          <app-csa-autocomplete
+            [(ngModel)]="grupo.CSA"
+            inputId="grupo-csa"
+            placeholder="Digite região ou comunidade..."
+            [required]="true"
+          ></app-csa-autocomplete>
         </div>
 
         <div class="form-row">
@@ -69,9 +73,9 @@
           </div>
         </div>
 
-        <div style="margin-top: 20px;">
-          <button class="btn btn-primary" (click)="saveGrupo()">Salvar</button>
-          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        <div class="flex flex-wrap gap-2 mt-5">
+          <button class="btn btn-primary m-0" (click)="saveGrupo()">Salvar</button>
+          <button class="btn btn-secondary m-0" (click)="closeModal()">Cancelar</button>
         </div>
       </div>
     </div>

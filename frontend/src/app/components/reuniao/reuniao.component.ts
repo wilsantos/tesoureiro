@@ -1,7 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Observable, of, throwError } from 'rxjs';
+import { finalize, switchMap } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
+import { PapelGrupo } from '../../models/usuario.model';
+
+type AbaReuniao = 'secretaria' | 'tesouraria';
 
 @Component({
   selector: 'app-reuniao',
@@ -41,20 +47,25 @@ export class ReuniaoComponent implements OnInit {
     Descricao: '',
     ValorDespesa: 0,
     repasse: false,
-    compra_literatura: false,
-    Comprovante: null
+    compra_literatura: false
   };
-  showModal: boolean = false;
-  showDespesaModal: boolean = false;
+  showFormulario: boolean = false;
+  showFormularioDespesa: boolean = false;
   isEdit: boolean = false;
   isEditDespesa: boolean = false;
   valorDespesaInput: string = '';
   filtroGrupo: number | null = null;
-  filtroMes: number | null = null;
-  filtroAno: number | null = null;
+  filtroMes: number = new Date().getMonth() + 1;
+  filtroAnoInput: string = String(new Date().getFullYear());
+  filtroAno: number = new Date().getFullYear();
   filtrosPreenchidos: boolean = false;
+  abaAtiva: AbaReuniao = 'secretaria';
+  salvandoReuniao = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService
+  ) {}
 
   grupoSelecionado: boolean = false;
   nomeGrupoSelecionado: string = '';
@@ -81,7 +92,7 @@ export class ReuniaoComponent implements OnInit {
 
   verificarFiltros() {
     // Verifica se grupo está selecionado e mês/ano estão preenchidos
-    const todosPreenchidos = this.filtroMes !== null && this.filtroAno !== null && this.filtroGrupo !== null;
+    const todosPreenchidos = this.filtroMes > 0 && this.filtroAno > 0 && this.filtroGrupo !== null;
     
     if (todosPreenchidos) {
       // Todos os filtros preenchidos - carregar reuniões
@@ -98,6 +109,10 @@ export class ReuniaoComponent implements OnInit {
     this.apiService.getGrupos().subscribe({
       next: (data) => {
         this.grupos = data;
+        if (this.grupos.length === 1) {
+          this.filtroGrupo = this.grupos[0].Id;
+          this.selecionarGrupo();
+        }
       },
       error: (error) => {
         console.error('Erro ao carregar grupos:', error);
@@ -173,6 +188,13 @@ export class ReuniaoComponent implements OnInit {
     this.verificarFiltros();
   }
 
+  onAnoInputChange(): void {
+    this.filtroAnoInput = this.filtroAnoInput.replace(/\D/g, '').slice(0, 4);
+    const ano = parseInt(this.filtroAnoInput, 10);
+    this.filtroAno = this.filtroAnoInput.length === 4 && !isNaN(ano) ? ano : 0;
+    this.onFiltroChange();
+  }
+
   getMeses(): { valor: number, nome: string }[] {
     return [
       { valor: 1, nome: 'Janeiro' },
@@ -190,27 +212,94 @@ export class ReuniaoComponent implements OnInit {
     ];
   }
 
-  getAnos(): number[] {
-    const anos: number[] = [];
-    const anoAtual = new Date().getFullYear();
-    // Gerar anos dos últimos 10 anos até 2 anos no futuro
-    for (let i = anoAtual - 10; i <= anoAtual + 2; i++) {
-      anos.push(i);
+  temEncargo(grupoId: number | null, papel: PapelGrupo): boolean {
+    if (!grupoId) {
+      return false;
     }
-    return anos.sort((a, b) => b - a); // Ordenar do mais recente para o mais antigo
+
+    const id = Number(grupoId);
+    const grupos = this.authService.getUsuario()?.Grupos ?? [];
+    return grupos.some(
+      (vinculo) => vinculo.GrupoId === id && vinculo.Papel === papel && vinculo.Ativo !== false
+    );
   }
 
-  openModal(editReuniao?: any) {
+  podeAcessarSecretaria(): boolean {
+    return this.temEncargo(this.reuniao.IdGrupo, 'secretaria');
+  }
+
+  podeAcessarTesouraria(): boolean {
+    return this.temEncargo(this.reuniao.IdGrupo, 'tesouraria');
+  }
+
+  gridTemSecretaria(): boolean {
+    return this.temEncargo(this.filtroGrupo, 'secretaria');
+  }
+
+  gridTemTesouraria(): boolean {
+    return this.temEncargo(this.filtroGrupo, 'tesouraria');
+  }
+
+  exibirGridCompleto(): boolean {
+    return this.gridTemSecretaria() && this.gridTemTesouraria();
+  }
+
+  exibirGridTesouraria(): boolean {
+    return this.gridTemTesouraria() && !this.gridTemSecretaria();
+  }
+
+  exibirGridSecretaria(): boolean {
+    return this.gridTemSecretaria() && !this.gridTemTesouraria();
+  }
+
+  getTotalParticipantes(reuniao: any): number {
+    return (Number(reuniao?.Membros) || 0) + (Number(reuniao?.Visitantes) || 0);
+  }
+
+  getGridColspan(): number {
+    if (this.exibirGridCompleto()) {
+      return 8;
+    }
+    if (this.exibirGridTesouraria()) {
+      return 5;
+    }
+    if (this.exibirGridSecretaria()) {
+      return 4;
+    }
+    return 2;
+  }
+
+  selecionarAba(aba: AbaReuniao): void {
+    if (aba === 'secretaria' && !this.podeAcessarSecretaria()) {
+      return;
+    }
+    if (aba === 'tesouraria' && !this.podeAcessarTesouraria()) {
+      return;
+    }
+    this.abaAtiva = aba;
+  }
+
+  private definirAbaInicial(): void {
+    const temSecretaria = this.podeAcessarSecretaria();
+    const temTesouraria = this.podeAcessarTesouraria();
+
+    if (temSecretaria) {
+      this.abaAtiva = 'secretaria';
+    } else if (temTesouraria) {
+      this.abaAtiva = 'tesouraria';
+    }
+  }
+
+  abrirFormulario(editReuniao?: any) {
     if (editReuniao) {
       this.reuniao = { ...editReuniao };
       this.isEdit = true;
       this.loadDespesas(this.reuniao.Id);
     } else {
-      // Nova reunião - grupo já vem preenchido do filtro
       this.reuniao = {
         Id: null,
-        IdGrupo: this.filtroGrupo, // Grupo já vem preenchido
-        Data: new Date().toISOString().split('T')[0],
+        IdGrupo: this.filtroGrupo,
+        Data: this.getDataLocalHoje(),
         Membros: 0,
         Visitantes: 0,
         ValorSetima: 0,
@@ -230,11 +319,20 @@ export class ReuniaoComponent implements OnInit {
       this.despesas = [];
       this.isEdit = false;
     }
-    this.showModal = true;
+
+    this.fecharFormularioDespesa();
+    this.definirAbaInicial();
+    this.showFormulario = true;
+
+    setTimeout(() => {
+      document.getElementById('formulario-reuniao')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
-  closeModal() {
-    this.showModal = false;
+  fecharFormulario() {
+    this.showFormulario = false;
+    this.fecharFormularioDespesa();
+    this.abaAtiva = 'secretaria';
     this.reuniao = {
       Id: null,
       IdGrupo: null,
@@ -269,9 +367,9 @@ export class ReuniaoComponent implements OnInit {
     });
   }
 
-  openDespesaModal(editDespesa?: any) {
+  abrirFormularioDespesa(editDespesa?: any) {
     if (editDespesa) {
-      this.despesa = { 
+      this.despesa = {
         ...editDespesa,
         repasse: editDespesa.repasse || false,
         compra_literatura: editDespesa.compra_literatura || false
@@ -285,17 +383,16 @@ export class ReuniaoComponent implements OnInit {
         Descricao: '',
         ValorDespesa: 0,
         repasse: false,
-        compra_literatura: false,
-        Comprovante: null
+        compra_literatura: false
       };
       this.valorDespesaInput = '';
       this.isEditDespesa = false;
     }
-    this.showDespesaModal = true;
+    this.showFormularioDespesa = true;
   }
 
-  closeDespesaModal() {
-    this.showDespesaModal = false;
+  fecharFormularioDespesa() {
+    this.showFormularioDespesa = false;
     this.valorDespesaInput = '';
     this.despesa = {
       Id: null,
@@ -303,22 +400,8 @@ export class ReuniaoComponent implements OnInit {
       Descricao: '',
       ValorDespesa: 0,
       repasse: false,
-      compra_literatura: false,
-      Comprovante: null
+      compra_literatura: false
     };
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        // Converter para base64
-        const base64 = e.target.result.split(',')[1];
-        this.despesa.Comprovante = base64;
-      };
-      reader.readAsDataURL(file);
-    }
   }
 
   formatMonetaryInput(value: string | number | null | undefined): string {
@@ -369,6 +452,44 @@ export class ReuniaoComponent implements OnInit {
     return parseFloat(normalized) || 0;
   }
 
+  private montarReuniaoParaSalvar(): Record<string, unknown> {
+    return {
+      ...this.reuniao,
+      ValorSetima: parseFloat(this.reuniao.ValorSetima) || 0,
+      ValorSetimaPix: parseFloat(this.reuniao.ValorSetimaPix) || 0,
+      VendaLiteratura: parseFloat(this.reuniao.VendaLiteratura) || 0,
+      FatosRelevantes: this.reuniao.FatosRelevantes || ''
+    };
+  }
+
+  garantirReuniaoPersistida(): Observable<number> {
+    if (this.reuniao.Id) {
+      return of(this.reuniao.Id);
+    }
+
+    if (!this.reuniao.IdGrupo || !this.reuniao.Data) {
+      return throwError(() => new Error('Preencha grupo e data da reunião'));
+    }
+
+    this.salvandoReuniao = true;
+
+    return this.apiService.createReuniao(this.montarReuniaoParaSalvar()).pipe(
+      switchMap((response) => {
+        const idReuniao = response.id;
+        if (!idReuniao) {
+          return throwError(() => new Error('Erro ao criar reunião'));
+        }
+        this.reuniao.Id = idReuniao;
+        this.isEdit = true;
+        this.carregarDespesas();
+        return of(idReuniao);
+      }),
+      finalize(() => {
+        this.salvandoReuniao = false;
+      })
+    );
+  }
+
   saveDespesa() {
     const valorDespesa = this.parseMonetaryValue(this.valorDespesaInput);
 
@@ -377,26 +498,23 @@ export class ReuniaoComponent implements OnInit {
       return;
     }
 
-    if (!this.despesa.IdReuniao) {
-      alert('Salve a reunião primeiro antes de adicionar despesas');
-      return;
-    }
+    this.garantirReuniaoPersistida().pipe(
+      switchMap((idReuniao) => {
+        const despesaParaSalvar = {
+          ...this.despesa,
+          IdReuniao: idReuniao,
+          ValorDespesa: valorDespesa
+        };
 
-    const despesaParaSalvar = {
-      ...this.despesa,
-      ValorDespesa: valorDespesa
-    };
-
-    const operacao = this.isEditDespesa 
-      ? this.apiService.updateDespesa(despesaParaSalvar)
-      : this.apiService.createDespesa(despesaParaSalvar);
-
-    operacao.subscribe({
-      next: (response) => {
+        return this.isEditDespesa
+          ? this.apiService.updateDespesa(despesaParaSalvar)
+          : this.apiService.createDespesa(despesaParaSalvar);
+      })
+    ).subscribe({
+      next: () => {
         alert(this.isEditDespesa ? 'Despesa atualizada com sucesso!' : 'Despesa criada com sucesso!');
-        this.closeDespesaModal();
+        this.fecharFormularioDespesa();
         this.loadDespesas(this.reuniao.Id);
-        // Recarregar o mapa de despesas para atualizar o grid
         this.carregarDespesas();
       },
       error: (error) => {
@@ -430,34 +548,18 @@ export class ReuniaoComponent implements OnInit {
       return;
     }
 
-    const reuniaoParaSalvar = {
-      ...this.reuniao,
-      ValorSetima: parseFloat(this.reuniao.ValorSetima) || 0,
-      ValorSetimaPix: parseFloat(this.reuniao.ValorSetimaPix) || 0,
-      VendaLiteratura: parseFloat(this.reuniao.VendaLiteratura) || 0,
-      FatosRelevantes: this.reuniao.FatosRelevantes || ''
-    };
+    const reuniaoParaSalvar = this.montarReuniaoParaSalvar();
+    const jaPersistida = this.isEdit && this.reuniao.Id;
 
-    const operacao = this.isEdit 
+    const operacao = jaPersistida
       ? this.apiService.updateReuniao(reuniaoParaSalvar)
       : this.apiService.createReuniao(reuniaoParaSalvar);
 
     operacao.subscribe({
-      next: (response) => {
-        console.log('Resposta da API:', response);
-        const idReuniao = this.isEdit ? this.reuniao.Id : response.id;
-        if (idReuniao) {
-          this.reuniao.Id = idReuniao;
-          this.loadDespesas(idReuniao);
-        }
-        alert(this.isEdit ? 'Reunião atualizada com sucesso!' : 'Reunião criada com sucesso!');
-        if (!this.isEdit) {
-          // Não fechar o modal se for criação, para permitir adicionar despesas
-          this.isEdit = true;
-        } else {
-          this.closeModal();
-        }
-        this.aplicarFiltros(); // Recarregar com os filtros atuais
+      next: () => {
+        alert(jaPersistida ? 'Reunião atualizada com sucesso!' : 'Reunião criada com sucesso!');
+        this.fecharFormulario();
+        this.aplicarFiltros();
       },
       error: (error) => {
         console.error('Erro ao salvar reunião:', error);
@@ -496,6 +598,15 @@ export class ReuniaoComponent implements OnInit {
     //return this.getGrupoNome(this.filtroGrupo);
   }
 
+  /** Data de hoje no fuso do navegador (YYYY-MM-DD), sem conversão UTC. */
+  private getDataLocalHoje(): string {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
   formatDate(date: string): string {
     if (!date) return '';
     
@@ -530,7 +641,8 @@ export class ReuniaoComponent implements OnInit {
     return this.despesasPorReuniao.get(idReuniao) || 0;
   }
 
-  formatCurrency(value: number): string {
-    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  formatCurrency(value: number | string): string {
+    const numero = this.parseMonetaryValue(value);
+    return numero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 }

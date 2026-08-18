@@ -1,0 +1,41 @@
+<div class="container pb-8">
+  <div class="header">
+    <div class="flex flex-wrap justify-between items-center gap-3">
+      <h1>Servidor de NA</h1>
+      <div class="flex items-center gap-3 text-sm" *ngIf="usuario$ | async as usuario">
+        <span class="text-surface/90">Bem-vindo, {{ usuario.Nome }}</span>
+        <button type="button" class="btn btn-secondary m-0" (click)="logout()">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-tabs" *ngIf="onboardingComplete$ | async as onboardingComplete">
+    <a routerLink="/app/cadastro" routerLinkActive="active" class="nav-tab">Cadastro</a>
+
+    <a
+      *ngIf="onboardingComplete"
+      routerLink="/app/grupos"
+      routerLinkActive="active"
+      class="nav-tab"
+    >Grupos</a>
+    <span *ngIf="!onboardingComplete" class="nav-tab disabled" title="Complete o cadastro para acessar">Grupos</span>
+
+    <a
+      *ngIf="onboardingComplete"
+      routerLink="/app/reunioes"
+      routerLinkActive="active"
+      class="nav-tab"
+    >Reuniões</a>
+    <span *ngIf="!onboardingComplete" class="nav-tab disabled" title="Complete o cadastro para acessar">Reuniões</span>
+
+    <a
+      *ngIf="onboardingComplete"
+      routerLink="/app/relatorios"
+      routerLinkActive="active"
+      class="nav-tab"
+    >Relatórios</a>
+    <span *ngIf="!onboardingComplete" class="nav-tab disabled" title="Complete o cadastro para acessar">Relatórios</span>
+  </div>
+
+  <router-outlet></router-outlet>
+</div>
