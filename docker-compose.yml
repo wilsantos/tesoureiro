@@ -18,7 +18,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       CADASTRO_ABERTO: ${CADASTRO_ABERTO:-true}
     volumes:
-      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/test.php"]
       interval: 15s
@@ -35,10 +35,12 @@ services:
       TZ: ${TZ:-}
     volumes:
       - ./frontend/publish:/usr/share/nginx/html:ro
-      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
 
   gateway:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: docker/gateway/Dockerfile
     restart: unless-stopped
     environment:
       TZ: ${TZ:-}
@@ -46,7 +48,7 @@ services:
       - "${APP_PORT:-8099}:80"
     volumes:
       - ./docker/nginx/gateway.conf:/etc/nginx/conf.d/default.conf:ro
-      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     depends_on:
       api:
         condition: service_healthy
