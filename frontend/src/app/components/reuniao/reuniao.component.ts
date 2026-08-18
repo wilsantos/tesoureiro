@@ -299,7 +299,7 @@ export class ReuniaoComponent implements OnInit {
       this.reuniao = {
         Id: null,
         IdGrupo: this.filtroGrupo,
-        Data: new Date().toISOString().split('T')[0],
+        Data: this.getDataLocalHoje(),
         Membros: 0,
         Visitantes: 0,
         ValorSetima: 0,
@@ -596,6 +596,15 @@ export class ReuniaoComponent implements OnInit {
     return this.nomeGrupoSelecionado;
    // if (!this.filtroGrupo) return '';
     //return this.getGrupoNome(this.filtroGrupo);
+  }
+
+  /** Data de hoje no fuso do navegador (YYYY-MM-DD), sem conversão UTC. */
+  private getDataLocalHoje(): string {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
   }
 
   formatDate(date: string): string {
